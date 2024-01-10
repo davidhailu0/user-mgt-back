@@ -1,0 +1,46 @@
+package com.hajj.hajj.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import com.hajj.hajj.model.Permission;
+import com.hajj.hajj.service.PermissionService;
+
+import jakarta.validation.Valid;
+
+@CrossOrigin
+@RestController
+@RequestMapping("/api/v1/permission")
+public class PermissionController {
+    @Autowired
+    PermissionService permissionService;
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public List<Permission> getAllPermissions(){
+        return permissionService.getAllPermission();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public Optional<Permission> getPermissionById(@PathVariable Long id){
+        return permissionService.getPermissionById(id);
+    }
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public Permission registerNewPermission(@Valid @RequestBody Permission permission){
+        return permissionService.savePermission(permission);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public Optional<Permission> updatePermission(@PathVariable Long id,@RequestBody Permission permission){
+        return permissionService.updatePermission(id,permission);
+    }
+}

@@ -1,0 +1,45 @@
+package com.hajj.hajj.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import com.hajj.hajj.model.UserDetail;
+import com.hajj.hajj.service.UserDetailService;
+
+import jakarta.validation.Valid;
+
+@CrossOrigin
+@RequestMapping("/api/v1/userDetail")
+@RestController
+public class UserDetailController {
+    @Autowired
+    UserDetailService userDetailService;
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public List<UserDetail> getAllUserDetail(){
+        return userDetailService.getAllUserDetail();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public Optional<UserDetail> getUserDetailById(@PathVariable Long id){
+        return userDetailService.getUserDetailById(id);
+    }
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public UserDetail registerNewUserDetail(@Valid @RequestBody UserDetail userDetail){
+        return userDetailService.saveUserDetail(userDetail);
+    }
+
+    @PutMapping("/{id}")
+    public Optional<UserDetail> updateUserDetail(@RequestBody UserDetail userDetail,@PathVariable Long id){
+        return userDetailService.updateUserDetail(id,userDetail);
+    }
+}
