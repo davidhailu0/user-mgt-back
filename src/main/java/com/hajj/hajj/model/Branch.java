@@ -18,8 +18,9 @@ import lombok.Setter;
 @Setter
 public class Branch{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_seq")
-    @SequenceGenerator(sequenceName = "branch_seq", allocationSize = 1, name = "branch_seq")
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branch_seq")
+    // @SequenceGenerator(sequenceName = "branch_seq", allocationSize = 1, name = "branch_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String branch_code;
     private String name;

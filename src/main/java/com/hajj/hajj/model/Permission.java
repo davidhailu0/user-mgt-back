@@ -18,8 +18,9 @@ import lombok.Setter;
 @Setter
 public class Permission{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "perm_seq")
-    @SequenceGenerator(sequenceName = "perm_seq", allocationSize = 1, name = "perm_seq")
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "perm_seq")
+    // @SequenceGenerator(sequenceName = "perm_seq", allocationSize = 1, name = "perm_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String name;
     @ManyToOne(cascade = CascadeType.REMOVE)

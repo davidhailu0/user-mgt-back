@@ -20,8 +20,9 @@ import lombok.Setter;
 @Setter
 public class UserDetail{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userdetail_seq")
-    @SequenceGenerator(sequenceName = "userdetail_seq", allocationSize = 1, name = "userdetail_seq")
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userdetail_seq")
+    // @SequenceGenerator(sequenceName = "userdetail_seq", allocationSize = 1, name = "userdetail_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     Date start_date;
     Date status_changed_on;

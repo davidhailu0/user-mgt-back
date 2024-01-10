@@ -21,26 +21,22 @@ public class BranchController{
     BranchService branchService;
     
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public List<Branch> getAllBranches(){
         return branchService.getAllBranches();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public Optional<Branch> getBranchById(@PathVariable Long id){
         return branchService.getBranchById(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public Branch registerNewBranch(@Valid @RequestBody Branch newBranch){
         return branchService.saveBranch(newBranch);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<Branch> updateBranch(@RequestBody Branch updatedBranch,@PathVariable Long id){
         return branchService.updateBranch(id,updatedBranch);
     }

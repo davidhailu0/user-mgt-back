@@ -1,6 +1,7 @@
 package com.hajj.hajj.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -22,6 +23,9 @@ public class SecurityConfig {
     @Autowired
     AuthFailure authFailure;
 
+    @Value("${authorized.ip}")
+    String authorizedIP;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.formLogin(formLogin ->
@@ -30,7 +34,9 @@ public class SecurityConfig {
                     .permitAll()
         );
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-         .authorizeHttpRequests(auth -> auth.requestMatchers("/**").access(new WebExpressionAuthorizationManager("hasIpAddress('10.11.0.0/24')")).requestMatchers("/login/**","/logout/**").permitAll()
+         .authorizeHttpRequests(auth -> auth.requestMatchers("/login/**","/logout/**").permitAll()
+                 .requestMatchers("/**")
+                 .access(new WebExpressionAuthorizationManager("isAuthenticated() and hasIpAddress('"+authorizedIP+"')"))
                  .anyRequest()
                  .authenticated()
          ).build();
@@ -41,4 +47,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 }

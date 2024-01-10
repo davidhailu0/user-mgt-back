@@ -21,25 +21,21 @@ public class RoleHasPermissionController {
     RoleHasPermissionService roleHasPermissionService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public List<RoleHasPermission> getAllRolesWithPermissions(){
         return roleHasPermissionService.getAllRolesWithPermissions();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<RoleHasPermission> getRolesWithPermissionById(@PathVariable Long id){
         return roleHasPermissionService.getRoleHasPermissionById(id);
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public RoleHasPermission registerRoleWithPermission(@Valid @RequestBody RoleHasPermission roleHasPermission){
         return roleHasPermissionService.saveRoleHasPermission(roleHasPermission);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<RoleHasPermission> updateRoleWithPermission(@RequestBody RoleHasPermission roleHasPermission,@PathVariable Long id){
         return roleHasPermissionService.updateRoleWithPermission(id,roleHasPermission);
     }

@@ -21,25 +21,21 @@ public class UserRoleController {
     UserRoleService userRoleService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public List<UserRole> getAllUserRole(){
         return userRoleService.getAllUserRole();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<UserRole> getUserRoleById(@PathVariable Long id){
         return userRoleService.getUserRoleById(id);
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public UserRole registerUserRole(@Valid @RequestBody UserRole userRole){
         return userRoleService.saveUserRole(userRole);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<UserRole> updateUserRole(@RequestBody UserRole userRole,@PathVariable Long id){
         return userRoleService.updateUserRole(id,userRole);
     }

@@ -21,19 +21,16 @@ public class UserDetailController {
     UserDetailService userDetailService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public List<UserDetail> getAllUserDetail(){
         return userDetailService.getAllUserDetail();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<UserDetail> getUserDetailById(@PathVariable Long id){
         return userDetailService.getUserDetailById(id);
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public UserDetail registerNewUserDetail(@Valid @RequestBody UserDetail userDetail){
         return userDetailService.saveUserDetail(userDetail);
     }

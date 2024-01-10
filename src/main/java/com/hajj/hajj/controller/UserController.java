@@ -22,25 +22,22 @@ public class UserController {
     UserService userService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public List<Users> getAllUsers(){
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    
     public Optional<Users> getUserById(@PathVariable Long id){
         return userService.getUserById(id);
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Users registerUser(@Valid @RequestBody Users user){
         return userService.saveUser(user);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public Optional<Users> updateUserInfo(@RequestBody Users user,@PathVariable Long id){
         return userService.updateUser(id,user);
     }

@@ -20,8 +20,9 @@ import lombok.Setter;
 @Setter
 public class RoleHasPermission{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rolehas_seq")
-    @SequenceGenerator(sequenceName = "rolehas_seq", allocationSize = 1, name = "rolehas_seq")
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rolehas_seq")
+    // @SequenceGenerator(sequenceName = "rolehas_seq", allocationSize = 1, name = "rolehas_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="role_id",referencedColumnName = "id")

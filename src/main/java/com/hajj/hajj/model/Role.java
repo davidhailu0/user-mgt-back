@@ -18,8 +18,9 @@ import lombok.Setter;
 @Getter
 public class Role{
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_seq")
-    @SequenceGenerator(sequenceName = "role_seq", allocationSize = 1, name = "role_seq")
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_seq")
+    // @SequenceGenerator(sequenceName = "role_seq", allocationSize = 1, name = "role_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String name;
     String description;

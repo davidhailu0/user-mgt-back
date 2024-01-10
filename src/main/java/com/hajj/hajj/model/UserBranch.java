@@ -19,8 +19,9 @@ import lombok.Setter;
 @Setter
 public class UserBranch {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userrole_seq")
-    @SequenceGenerator(sequenceName = "userrole_seq", allocationSize = 1, name = "userrole_seq")
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userrole_seq")
+    // @SequenceGenerator(sequenceName = "userrole_seq", allocationSize = 1, name = "userrole_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="branch_id",referencedColumnName = "id")
