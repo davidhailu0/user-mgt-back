@@ -35,8 +35,8 @@ public class SecurityConfig {
         );
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
          .authorizeHttpRequests(auth -> auth.requestMatchers("/login/**","/logout/**").permitAll()
-                 .requestMatchers("/**")
-                 .access(new WebExpressionAuthorizationManager("isAuthenticated() and hasIpAddress('"+authorizedIP+"')"))
+                //  .requestMatchers("/**")
+                //  .access(new WebExpressionAuthorizationManager("isAuthenticated() and hasIpAddress('"+authorizedIP+"')"))
                  .anyRequest()
                  .authenticated()
          ).build();

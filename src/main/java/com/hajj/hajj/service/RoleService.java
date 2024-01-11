@@ -33,6 +33,7 @@ public class RoleService {
         if(!roleRepo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Role With ID of "+id.toString()+" Not Found");
         }
+        role.setId(id);
         return Optional.of(roleRepo.save(role));
     }
 }

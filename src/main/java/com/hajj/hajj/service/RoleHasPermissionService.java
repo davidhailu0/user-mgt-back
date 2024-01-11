@@ -33,6 +33,7 @@ public class RoleHasPermissionService {
         if(!roleHasPermissionRepo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"RoleHasPermission with ID of "+id.toString()+" Not Found");
         }
+        roleHasPermission.setId(id);
         return Optional.of(roleHasPermissionRepo.save(roleHasPermission));
     }
 }

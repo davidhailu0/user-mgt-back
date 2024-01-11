@@ -33,6 +33,7 @@ public class BranchService {
         if(!branchRepo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Branch With ID of "+id.toString()+" Not Found");
         }
+        updateBranchInfo.setId(id);
         return Optional.of(branchRepo.save(updateBranchInfo));
     }
 }
