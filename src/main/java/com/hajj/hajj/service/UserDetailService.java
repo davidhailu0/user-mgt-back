@@ -34,6 +34,7 @@ public class UserDetailService {
        if(!userDetailRepo.existsById(id)){
            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Detail With ID of "+id.toString()+" Not Found");
        }
+       userDetail.setId(id);
        return Optional.of(userDetailRepo.save(userDetail));
     }
 }

@@ -57,6 +57,7 @@ public class PermissionService {
         if(!permissionRepo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Permission with ID of "+id.toString()+" not found");
         }
+        updatedPermission.setId(id);
         return Optional.of(permissionRepo.save(updatedPermission));
     }
 }

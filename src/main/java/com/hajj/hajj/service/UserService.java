@@ -58,6 +58,7 @@ public class UserService implements UserDetailsService{
         if(!user.getPassword().equals(updatedUser.getPassword())){
             updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
+        updatedUser.setId(id);
         return Optional.of(userRepo.save(updatedUser));
     }
 

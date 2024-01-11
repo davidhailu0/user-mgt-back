@@ -22,7 +22,7 @@ public class AuthSuccess implements AuthenticationSuccessHandler{
                 String json = new Gson().toJson(authenticatedUserDetail);
                 response.setContentType("application/json");
                 response.addHeader("JSESSIONID",request.getSession().getId());
-                response.getWriter().write("{\"status\":\"success\",\"data\":"+ json +"}");
+                response.getWriter().write("{\"status\":\"success\",\"JSESSIONID\":"+request.getSession().getId()+",\"data\":"+ json +"}");
     }
     
 }
