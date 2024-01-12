@@ -23,14 +23,15 @@ public class LoginResponse {
     @Override
     public String toString(){
         return String.format("""
+            {
                 "user":{
                     "username":"%s",
-                    "branch":%s,
-                    "role":%s,
+                    "branch":"%s",
+                    "role":"%s",
                     "status":"%s"
                 },
                 "token":"%s"
-                }
+            }
                 """,username,branch==null?"null":branch,role==null?"null":role,status,token);
     }
 
