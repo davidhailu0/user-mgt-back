@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,12 +14,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hajj.hajj.DTO.LoginCredential;
 import com.hajj.hajj.DTO.LoginResponse;
 import com.hajj.hajj.config.JWTUtil;
@@ -27,8 +29,8 @@ import com.hajj.hajj.repository.UserRoleRepo;
 import com.hajj.hajj.repository.UsersRepo;
 
 @CrossOrigin
-@Controller
-@RequestMapping("/api/auth/")
+@RestController
+@RequestMapping("api/auth")
 public class AuthController {
 
     @Value("${react.login}")
@@ -43,32 +45,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public Object loginHandler(@RequestBody LoginCredential body){
-        return "hello";
-        // try {
-        //     System.out.println(body.getUsername());
-        //     System.out.println(body.getPassword());
-        //     UsernamePasswordAuthenticationToken authInputToken =
-        //             new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
-        //     authenticationManager.authenticate(authInputToken);
-        //     SecurityContext securityContext = SecurityContextHolder.getContext();
-        //     securityContext.setAuthentication(authInputToken);
-        //     String token = util.generateToken(body.getUsername());
-
-        //     LoginResponse response = new LoginResponse();
-        //     Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
-        //     response.setUsername(user.getUsername());
-        //     response.setBranch(user.getBranch());
-        //     // response.setRole(userRoleRepo.findByUser(user).get().getRole());
-        //     response.setToken(token);
-        //     response.setStatus(user.getStatus());
-        //     System.out.println(response.toString());
-        //     return response;
-        // }catch (AuthenticationException authExc){
-        //     Map<String, Object> error = new HashMap<>();
-        //     error.put("status", "failed");
-        //     error.put("message", "Invalid Username or Password");
-        //     return error;
-        // }
+        try {
+            UsernamePasswordAuthenticationToken authInputToken =
+                    new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+            authenticationManager.authenticate(authInputToken);
+            String token = util.generateToken(body.getUsername());
+            LoginResponse response = new LoginResponse();
+            Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
+            response.setUsername(user.getUsername());
+            response.setBranch(user.getBranch());
+            // response.setRole(userRoleRepo.findByUser(user).isPresent()?userRoleRepo.findByUser(user).get():null);
+            response.setToken(token);
+            response.setStatus(user.getStatus());
+            return response.toString();
+        }catch (AuthenticationException authExc){
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", "failed");
+            error.put("message", "Invalid Username or Password");
+            return error;
+        }
     }
 
     @RequestMapping(value = "/logout",method = RequestMethod.GET)
