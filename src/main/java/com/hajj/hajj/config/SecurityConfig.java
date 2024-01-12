@@ -55,8 +55,14 @@ public class SecurityConfig {
                  .authenticated()
          )
          .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        //  .authenticationProvider(authenticationProvider)
-        //  .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+         .exceptionHandling(exp->exp.authenticationEntryPoint(
+            (request, response, authException) ->{
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+            }
+         ))
+         .authenticationProvider(authenticationProvider)
+         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
          .build();
 
     }

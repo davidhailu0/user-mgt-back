@@ -4,8 +4,12 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -31,6 +35,7 @@ public class Users implements UserDetails{
     @NotBlank String username;
     String salt;
     @NotBlank
+    @JsonProperty(access = Access.WRITE_ONLY)
     String password;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "branch_id",referencedColumnName = "id")
