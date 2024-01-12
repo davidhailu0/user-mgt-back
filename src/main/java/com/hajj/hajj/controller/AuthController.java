@@ -3,6 +3,9 @@ package com.hajj.hajj.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,7 +28,7 @@ import com.hajj.hajj.repository.UsersRepo;
 
 @CrossOrigin
 @Controller
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth/")
 public class AuthController {
 
     @Value("${react.login}")
@@ -36,29 +39,36 @@ public class AuthController {
     @Autowired JWTUtil util;
     @Autowired UsersRepo usersRepo;
     @Autowired UserRoleRepo userRoleRepo;
-    @Autowired private AuthenticationManager authManager;
+    @Autowired AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
-    public LoginResponse loginHandler(@RequestBody LoginCredential body){
-        try {
-            UsernamePasswordAuthenticationToken authInputToken =
-                    new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+    public Object loginHandler(@RequestBody LoginCredential body){
+        return "hello";
+        // try {
+        //     System.out.println(body.getUsername());
+        //     System.out.println(body.getPassword());
+        //     UsernamePasswordAuthenticationToken authInputToken =
+        //             new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+        //     authenticationManager.authenticate(authInputToken);
+        //     SecurityContext securityContext = SecurityContextHolder.getContext();
+        //     securityContext.setAuthentication(authInputToken);
+        //     String token = util.generateToken(body.getUsername());
 
-            authManager.authenticate(authInputToken);
-
-            String token = util.generateToken(body.getUsername());
-
-            LoginResponse response = new LoginResponse();
-            Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
-            response.setUsername(user.getUsername());
-            response.setBranch(user.getBranch());
-            response.setRole(userRoleRepo.findByUser(user).get().getRole());
-            response.setToken(token);
-            response.setStatus(user.getStatus());
-            return response;
-        }catch (AuthenticationException authExc){
-            throw new RuntimeException("Invalid Login Credentials");
-        }
+        //     LoginResponse response = new LoginResponse();
+        //     Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
+        //     response.setUsername(user.getUsername());
+        //     response.setBranch(user.getBranch());
+        //     // response.setRole(userRoleRepo.findByUser(user).get().getRole());
+        //     response.setToken(token);
+        //     response.setStatus(user.getStatus());
+        //     System.out.println(response.toString());
+        //     return response;
+        // }catch (AuthenticationException authExc){
+        //     Map<String, Object> error = new HashMap<>();
+        //     error.put("status", "failed");
+        //     error.put("message", "Invalid Username or Password");
+        //     return error;
+        // }
     }
 
     @RequestMapping(value = "/logout",method = RequestMethod.GET)

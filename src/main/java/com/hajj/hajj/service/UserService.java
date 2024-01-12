@@ -5,28 +5,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hajj.hajj.DTO.UsersRequest;
-import com.hajj.hajj.config.UserDetailInfo;
 import com.hajj.hajj.model.Branch;
-import com.hajj.hajj.model.UserRole;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.BranchRepo;
 import com.hajj.hajj.repository.UserRoleRepo;
 import com.hajj.hajj.repository.UsersRepo;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
-public class UserService implements UserDetailsService{
+public class UserService {
     @Autowired
     UsersRepo userRepo;
 
@@ -48,11 +45,11 @@ public class UserService implements UserDetailsService{
         return userRepo.findAll();
     }
 
-    public Optional<Users> getUserById(Long id){
+    public Optional<Users> getUserById(@NonNull Long id){
         return userRepo.findById(id);
     }
 
-    public Users saveUser(UsersRequest userInfo){
+    public Users saveUser(@NonNull UsersRequest userInfo){
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
         if(userBranch.isPresent()){
@@ -95,15 +92,5 @@ public class UserService implements UserDetailsService{
         }
         updateUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         return Optional.of(userRepo.save(updateUser));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Users> user = userRepo.findUsersByUsername(username);
-        if(user.isPresent()){
-            Optional<UserRole> role = userRoleRepo.findByUser(user.get());
-            return role.map(value -> new UserDetailInfo(user.get())).orElseGet(() -> new UserDetailInfo(user.get()));
-        }
-        throw new UsernameNotFoundException("Username "+username+" Not Found");
     }
 }

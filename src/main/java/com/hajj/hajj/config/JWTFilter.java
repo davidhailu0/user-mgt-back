@@ -7,12 +7,11 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.hajj.hajj.service.UserService;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +19,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JWTFilter extends OncePerRequestFilter{
-    @Autowired private UserService userDetailsService;
+    @Autowired private UserDetailsService userDetailsService;
     @Autowired private JWTUtil jwtUtil;
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -30,18 +29,32 @@ public class JWTFilter extends OncePerRequestFilter{
         if(authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")){
             String jwt = authHeader.substring(7);
             if(jwt == null || jwt.isBlank()){
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unauthorized");
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("""
+                    {
+                        \"status\":\"failed\",
+                        \"message\":\"Unauthorized\"
+                    }
+                        """);
             }else {
                 try{
-                    String email = jwtUtil.validateTokenAndRetrieveSubject(jwt);
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    String username = jwtUtil.validateTokenAndRetrieveSubject(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(email, userDetails.getPassword(), userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
                     if(SecurityContextHolder.getContext().getAuthentication() == null){
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
                 }catch(JWTVerificationException exc){
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unauthorized");
+                    response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("""
+                    {
+                        \"status\":\"failed\",
+                        \"message\":\"Unauthorized\"
+                    }
+                        """);
                 }
             }
         }

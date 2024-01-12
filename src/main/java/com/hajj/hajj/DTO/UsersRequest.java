@@ -1,7 +1,5 @@
 package com.hajj.hajj.DTO;
 
-import java.sql.Timestamp;
-
 import lombok.Getter;
 import lombok.Setter;
 

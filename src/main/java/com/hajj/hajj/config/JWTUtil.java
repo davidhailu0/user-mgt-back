@@ -27,7 +27,7 @@ public class JWTUtil {
                 .withIssuedAt(new Date())
                 .withExpiresAt(Date.from(expirationTime))
                 .withIssuer("Hajj User Management")
-                .sign(Algorithm.HMAC512(secret));
+                .sign(Algorithm.HMAC256(secret));
     }
 
     public String validateTokenAndRetrieveSubject(String token)throws JWTVerificationException {
