@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hajj.hajj.DTO.PermissionRequest;
 import com.hajj.hajj.model.Permission;
 import com.hajj.hajj.service.PermissionService;
 
@@ -31,12 +32,12 @@ public class PermissionController {
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Permission registerNewPermission(@Valid @RequestBody Permission permission){
+    public Permission registerNewPermission(@Valid @RequestBody PermissionRequest permission){
         return permissionService.savePermission(permission);
     }
 
     @PutMapping("/{id}")
-    public Optional<Permission> updatePermission(@PathVariable Long id,@RequestBody Permission permission){
+    public Optional<Permission> updatePermission(@PathVariable Long id,@RequestBody PermissionRequest permission){
         return permissionService.updatePermission(id,permission);
     }
 }
