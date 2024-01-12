@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hajj.hajj.DTO.RoleHasPermissionRequest;
 import com.hajj.hajj.model.RoleHasPermission;
 import com.hajj.hajj.service.RoleHasPermissionService;
 
@@ -31,12 +32,12 @@ public class RoleHasPermissionController {
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public RoleHasPermission registerRoleWithPermission(@Valid @RequestBody RoleHasPermission roleHasPermission){
+    public RoleHasPermission registerRoleWithPermission(@Valid @RequestBody RoleHasPermissionRequest roleHasPermission){
         return roleHasPermissionService.saveRoleHasPermission(roleHasPermission);
     }
 
     @PutMapping("/{id}")
-    public Optional<RoleHasPermission> updateRoleWithPermission(@RequestBody RoleHasPermission roleHasPermission,@PathVariable Long id){
+    public Optional<RoleHasPermission> updateRoleWithPermission(@RequestBody RoleHasPermissionRequest roleHasPermission,@PathVariable Long id){
         return roleHasPermissionService.updateRoleWithPermission(id,roleHasPermission);
     }
 }

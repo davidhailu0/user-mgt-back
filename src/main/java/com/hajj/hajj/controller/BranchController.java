@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hajj.hajj.DTO.BranchRequest;
 import com.hajj.hajj.model.Branch;
 import com.hajj.hajj.service.BranchService;
 
@@ -32,12 +33,12 @@ public class BranchController{
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Branch registerNewBranch(@Valid @RequestBody Branch newBranch){
+    public Branch registerNewBranch(@Valid @RequestBody BranchRequest newBranch){
         return branchService.saveBranch(newBranch);
     }
 
     @PutMapping("/{id}")
-    public Optional<Branch> updateBranch(@RequestBody Branch updatedBranch,@PathVariable Long id){
+    public Optional<Branch> updateBranch(@RequestBody BranchRequest updatedBranch,@PathVariable Long id){
         return branchService.updateBranch(id,updatedBranch);
     }
 }

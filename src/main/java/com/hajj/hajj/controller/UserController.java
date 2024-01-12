@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hajj.hajj.DTO.UsersRequest;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.service.UserService;
 
@@ -33,12 +34,12 @@ public class UserController {
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Users registerUser(@Valid @RequestBody Users user){
+    public Users registerUser(@Valid @RequestBody UsersRequest user){
         return userService.saveUser(user);
     }
 
     @PutMapping("/{id}")
-    public Optional<Users> updateUserInfo(@RequestBody Users user,@PathVariable Long id){
+    public Optional<Users> updateUserInfo(@RequestBody UsersRequest user,@PathVariable Long id){
         return userService.updateUser(id,user);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.hajj.hajj.DTO.RoleRequest;
 import com.hajj.hajj.model.Role;
 import com.hajj.hajj.service.RoleService;
 
@@ -31,12 +32,12 @@ public class RoleController {
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Role registerNewRole(@Valid @RequestBody Role role){
+    public Role registerNewRole(@Valid @RequestBody RoleRequest role){
         return roleService.saveRole(role);
     }
 
     @PutMapping("/{id}")
-    public Optional<Role> updateRole(@RequestBody Role role,@PathVariable Long id){
+    public Optional<Role> updateRole(@RequestBody RoleRequest role,@PathVariable Long id){
         return roleService.updateRole(id,role);
     }
 }

@@ -13,13 +13,19 @@ import jakarta.annotation.PostConstruct;
 
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hajj.hajj.DTO.PermissionRequest;
 import com.hajj.hajj.model.Permission;
+import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.PermissionRepo;
+import com.hajj.hajj.repository.UsersRepo;
 
 @Service
 public class PermissionService {
     @Autowired
     PermissionRepo permissionRepo;
+
+    @Autowired
+    UsersRepo usersRepo;
 
     @PostConstruct
     void addPermissions(){
@@ -49,15 +55,33 @@ public class PermissionService {
         return permissionRepo.findById(id);
     }
 
-    public Permission savePermission(Permission permissionInfo){
-        return permissionRepo.save(permissionInfo);
+    public Permission savePermission(PermissionRequest permissionInfo){
+        Permission newPermission = new Permission();
+        newPermission.setName(permissionInfo.getName());
+        newPermission.setStatus(permissionInfo.getStatus());
+        Optional<Users> created_by = usersRepo.findById(null);
+        if(created_by.isPresent()){
+            newPermission.setCreated_by(created_by.get());
+            newPermission.setUpdated_by(created_by.get());
+        }
+        LocalDateTime now = LocalDateTime.now();
+        newPermission.setCreated_at(Timestamp.valueOf(now));
+        newPermission.setUpdated_at(Timestamp.valueOf(now));
+        return permissionRepo.save(newPermission);
     }
 
-    public Optional<Permission> updatePermission(Long id,Permission updatedPermission){
+    public Optional<Permission> updatePermission(Long id,PermissionRequest updatedPermission){
         if(!permissionRepo.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Permission with ID of "+id.toString()+" not found");
         }
-        updatedPermission.setId(id);
-        return Optional.of(permissionRepo.save(updatedPermission));
+        Permission updatePermission = permissionRepo.findById(id).get();
+        updatePermission.setName(updatedPermission.getName());
+        updatePermission.setStatus(updatedPermission.getStatus());
+        updatePermission.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+        Optional<Users> updated_by = usersRepo.findById(null);
+        if(updated_by.isPresent()){
+            updatePermission.setUpdated_by(updated_by.get());
+        }
+        return Optional.of(permissionRepo.save(updatePermission));
     }
 }
