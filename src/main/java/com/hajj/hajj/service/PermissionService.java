@@ -27,25 +27,25 @@ public class PermissionService {
     @Autowired
     UsersRepo usersRepo;
 
-    @PostConstruct
-    void addPermissions(){
-        permissionRepo.save(new Permission("New",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Copy",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Delete",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Close",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Unlock",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Reopen",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Print",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Auth",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Reverse",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Rollover Components",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Confirm",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Liquidate",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Hold",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Template",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("View",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-        permissionRepo.save(new Permission("Generate",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-    }
+    // @PostConstruct
+    // void addPermissions(){
+    //     permissionRepo.save(new Permission("New",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Copy",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Delete",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Close",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Unlock",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Reopen",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Print",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Auth",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Reverse",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Rollover Components",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Confirm",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Liquidate",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Hold",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Template",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("View",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    //     permissionRepo.save(new Permission("Generate",null,null, Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+    // }
 
     public List<Permission> getAllPermission(){
         return permissionRepo.findAll();
