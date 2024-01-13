@@ -3,18 +3,22 @@ package com.hajj.hajj.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,12 +56,9 @@ public class AuthController {
             String token = util.generateToken(body.getUsername());
             LoginResponse response = new LoginResponse();
             Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
-            response.setUsername(user.getUsername());
-            response.setBranch(user.getBranch());
-            // response.setRole(userRoleRepo.findByUser(user).isPresent()?userRoleRepo.findByUser(user).get():null);
+            response.setUser(user);
             response.setToken(token);
-            response.setStatus(user.getStatus());
-            return response.toString();
+            return response;
         }catch (AuthenticationException authExc){
             Map<String, Object> error = new HashMap<>();
             error.put("status", "failed");
@@ -72,9 +73,18 @@ public class AuthController {
         session.invalidate();
         SecurityContext securityContext = SecurityContextHolder.getContext();
         securityContext.setAuthentication(null);
+        authenticationManager.authenticate(null);
         return "redirect:/login";
     }
 
+    @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public Users getProfile(HttpServletRequest request){
+        String token = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(token.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+        return user;
+    }
 //    @RequestMapping(value="/dashboard")
 //    public ModelAndView dashboard(){
 //        return new ModelAndView("redirect:"+dashboard);

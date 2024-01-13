@@ -80,6 +80,7 @@ public class HajjController {
         String  amount= hUjjaj.getAmount();
 
 //Validation between amount and amount_in account
+        // if(amount)
 
 //POst
         hujjajRepo.save(new HUjjaj());
