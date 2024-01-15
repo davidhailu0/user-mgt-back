@@ -33,7 +33,7 @@ public class UserDetailService {
     }
 
     public Optional<UserDetail> getUserDetailById(@PathVariable Long id){
-        return userDetailRepo.findById(id);
+        return Optional.ofNullable(userDetailRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Detail not Found")));
     }
 
     public UserDetail saveUserDetail(UserDetailRequest userDetail){
@@ -60,9 +60,7 @@ public class UserDetailService {
         UserDetail updatedUserDetail =userDetailRepo.findById(id).get();
         updatedUserDetail.setFull_name(userDetail.getFull_name());
         Optional<Users> updated_by = usersRepo.findById(userDetail.getUpdated_by());
-        if(updated_by.isPresent()){
-            updatedUserDetail.setUpdated_by((updated_by.get()));
-        }
+        updated_by.ifPresent(updatedUserDetail::setUpdated_by);
         updatedUserDetail.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         if(!updatedUserDetail.getStatus().equals(userDetail.getStatus())){
             updatedUserDetail.setStatus_changed_on(Date.valueOf(LocalDate.now()));

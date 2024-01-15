@@ -28,13 +28,13 @@ public class JWTFilter extends OncePerRequestFilter{
         String authHeader = request.getHeader("Authorization");
         if(authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")){
             String jwt = authHeader.substring(7);
-            if(jwt == null || jwt.isBlank()){
+            if(jwt.isBlank()){
                 response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("""
                     {
-                        \"status\":\"failed\",
-                        \"message\":\"Unauthorized\"
+                        "status":"failed",
+                        "message":"Unauthorized"
                     }
                         """);
             }else {
@@ -48,11 +48,11 @@ public class JWTFilter extends OncePerRequestFilter{
                     }
                 }catch(JWTVerificationException exc){
                     response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("""
                     {
-                        \"status\":\"failed\",
-                        \"message\":\"Unauthorized\"
+                        "status":"failed",
+                        "message":"Unauthorized"
                     }
                         """);
                 }

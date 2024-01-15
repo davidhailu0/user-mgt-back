@@ -52,14 +52,14 @@ public class PermissionService {
     }
 
     public Optional<Permission> getPermissionById(Long id){
-        return permissionRepo.findById(id);
+        return Optional.ofNullable(permissionRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not Found")));
     }
 
     public Permission savePermission(PermissionRequest permissionInfo){
         Permission newPermission = new Permission();
         newPermission.setName(permissionInfo.getName());
         newPermission.setStatus(permissionInfo.getStatus());
-        Optional<Users> created_by = usersRepo.findById(null);
+        Optional<Users> created_by = usersRepo.findById(permissionInfo.getCreated_by());
         if(created_by.isPresent()){
             newPermission.setCreated_by(created_by.get());
             newPermission.setUpdated_by(created_by.get());
@@ -78,10 +78,8 @@ public class PermissionService {
         updatePermission.setName(updatedPermission.getName());
         updatePermission.setStatus(updatedPermission.getStatus());
         updatePermission.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-        Optional<Users> updated_by = usersRepo.findById(null);
-        if(updated_by.isPresent()){
-            updatePermission.setUpdated_by(updated_by.get());
-        }
+        Optional<Users> updated_by = usersRepo.findById(updatedPermission.getUpdated_by());
+        updated_by.ifPresent(updatePermission::setUpdated_by);
         return Optional.of(permissionRepo.save(updatePermission));
     }
 }

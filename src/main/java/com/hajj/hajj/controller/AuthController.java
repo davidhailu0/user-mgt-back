@@ -1,6 +1,7 @@
 package com.hajj.hajj.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.security.Principal;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,7 +34,7 @@ import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UserRoleRepo;
 import com.hajj.hajj.repository.UsersRepo;
 
-@CrossOrigin
+@CrossOrigin("*")
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
@@ -48,7 +50,7 @@ public class AuthController {
     @Autowired AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
-    public Object loginHandler(@RequestBody LoginCredential body){
+    public Object loginHandler(@RequestBody LoginCredential body, HttpServletResponse resp){
         try {
             UsernamePasswordAuthenticationToken authInputToken =
                     new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
@@ -63,6 +65,7 @@ public class AuthController {
             Map<String, Object> error = new HashMap<>();
             error.put("status", "failed");
             error.put("message", "Invalid Username or Password");
+            resp.setStatus(401);
             return error;
         }
     }

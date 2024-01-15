@@ -14,7 +14,6 @@ import com.hajj.hajj.service.UserDetailService;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin
 @RequestMapping("/api/v1/userDetail")
 @RestController
 public class UserDetailController {
