@@ -35,15 +35,13 @@ public class UserRoleService {
     }
 
     public Optional<UserRole> getUserRoleById(Long id){
-        return userRoleRepo.findById(id);
+        return Optional.ofNullable(userRoleRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User Role not Found")));
     }
 
     public UserRole saveUserRole(UserRoleRequest userRole){
         UserRole newUserRole = new UserRole();
         Optional<Role> assignedRole = roleRepo.findById(userRole.getRole());
-        if(assignedRole.isPresent()){
-            newUserRole.setRole(assignedRole.get());
-        }
+        assignedRole.ifPresent(newUserRole::setRole);
         Optional<Users> assignedByUser = usersRepo.findById(userRole.getAssigned_by());
         if(assignedRole.isPresent()){
             newUserRole.setAssigned_by(assignedByUser.get());
@@ -54,9 +52,7 @@ public class UserRoleService {
         newUserRole.setUpdated_at(Timestamp.valueOf(now));
         newUserRole.setStatus(userRole.getStatus());
         Optional<Users> user = usersRepo.findById(userRole.getUser());
-        if(user.isPresent()){
-            newUserRole.setUser(user.get());
-        }
+        user.ifPresent(newUserRole::setUser);
         return userRoleRepo.save(newUserRole);
     }
 

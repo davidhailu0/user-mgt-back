@@ -30,7 +30,7 @@ public class BranchService {
     }
 
     public Optional<Branch> getBranchById(Long id){
-        return branchRepo.findById(id);
+        return Optional.ofNullable(branchRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found.")));
     }
 
     public Branch saveBranch(BranchRequest branchInfo){
@@ -59,9 +59,7 @@ public class BranchService {
         updatedBranch.setStatus(updateBranchInfo.getStatus());
         updatedBranch.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         Optional<Users> updated_by = usersRepo.findById(updateBranchInfo.getUpdated_by());
-        if(updated_by.isPresent()){
-            updatedBranch.setUpdated_by(updated_by.get());
-        }
+        updated_by.ifPresent(updatedBranch::setUpdated_by);
         return Optional.of(branchRepo.save(updatedBranch));
     }
 }

@@ -17,7 +17,7 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 @Component
 public class JWTUtil {
     @Value("${jwt_secret}")
-    private String secret;
+    String secret;
 
     public String generateToken(String username) throws IllegalArgumentException, JWTCreationException {
         Instant expirationTime = Instant.now().plus(Duration.ofMinutes(30));

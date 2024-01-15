@@ -14,7 +14,7 @@ import com.hajj.hajj.service.UserService;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin
+@CrossOrigin("*")
 @RequestMapping("api/v1/user")
 @RestController
 public class UserController {

@@ -30,7 +30,7 @@ public class RoleService {
     }
 
     public Optional<Role> getRoleById(Long id){
-        return roleRepo.findById(id);
+        return Optional.ofNullable(roleRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not Found")));
     }
 
     public Role saveRole(RoleRequest role){

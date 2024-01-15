@@ -29,7 +29,7 @@ public class HUjjaj {
     String account_number;
     String account_holder;
     String trans_ref_no;
-
+    String amount_inaccount;
     String EXTERNAL_REF_NO;
     String  TRN_CODE ;
     String AC_BRANCH;

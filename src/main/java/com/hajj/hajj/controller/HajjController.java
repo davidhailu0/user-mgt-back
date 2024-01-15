@@ -22,7 +22,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://10.11.0.46:3006")
 @RestController
 @RequestMapping("/api/v1")
 public class HajjController {
@@ -34,10 +37,10 @@ public class HajjController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @GetMapping(value = "/get_hujaj")
-    public  Object get_hujaj(@RequestBody HUjjaj hUjjaj)
+    @GetMapping("/get_hujaj/{payment_code}")
+    public  Object get_hujaj(@PathVariable String payment_code)
     {
-        final String apiUrl = env.getProperty("hajjApi")+ hUjjaj.getPayment_code();
+        final String apiUrl = env.getProperty("hajjApi")+ payment_code;
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -77,21 +80,37 @@ public class HajjController {
         String  account_holder= hUjjaj.getAccount_holder();
         String  trans_ref_no= hUjjaj.getTrans_ref_no();
         Timestamp  date= Timestamp.valueOf(LocalDateTime.now());
-        String  amount= hUjjaj.getAmount();
+        double amount;
+        double amount_inAccount;
+        try {
+            amount = Double.parseDouble(hUjjaj.getAmount());
+            amount_inAccount = Double.parseDouble(hUjjaj.getAmount_inaccount());
+        }
+        catch(NumberFormatException | NullPointerException e){
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Please Enter a Valid Amount Value");
+            error.put("status", "failed");
+            return error;
+        }
 
 //Validation between amount and amount_in account
-        // if(amount)
-
-//POst
-        hujjajRepo.save(new HUjjaj());
-
-
-        return null;
+        if (amount <= amount_inAccount){
+                hujjajRepo.save(hUjjaj);
+                Map<String, Object> success = new HashMap<>();
+                success.put("message", "Transaction Made Successfully");
+                success.put("status", "Success");
+                return success;
+        }
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", "You Don't Have Enough Account Balance To Make the Transaction");
+        error.put("status", "failed");
+        return error;
     }
 
     @PostMapping("/Check_hajj_trans")
     public  Object CHECK_hujaj_transaction()
     {
+
 //   Accept values from user and check the transaction
 //        call wso2 end point post transaction
 //        update mysql table based oon payment code

@@ -41,15 +41,13 @@ public class RoleHasPermissionService {
     }
 
     public Optional<RoleHasPermission> getRoleHasPermissionById(Long id){
-        return roleHasPermissionRepo.findById(id);
+        return Optional.ofNullable(roleHasPermissionRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not Found")));
     }
 
     public RoleHasPermission saveRoleHasPermission(RoleHasPermissionRequest roleHasPermission){
         RoleHasPermission newRoleHasPermission = new RoleHasPermission();
         Optional<Role> assignedRole = roleRepo.findById(roleHasPermission.getRole());
-        if(assignedRole.isPresent()){
-            newRoleHasPermission.setRole(assignedRole.get());
-        }
+        assignedRole.ifPresent(newRoleHasPermission::setRole);
         newRoleHasPermission.setPermission((Permission[]) permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())).toArray());
         newRoleHasPermission.setStatus(roleHasPermission.getStatus());
         Optional<Users> created_by = usersRepo.findById(roleHasPermission.getCreated_by());
@@ -69,15 +67,11 @@ public class RoleHasPermissionService {
         }
         RoleHasPermission updatedRoleHasPermission = roleHasPermissionRepo.findById(id).get();
         Optional<Role> assignedRole = roleRepo.findById(roleHasPermission.getRole());
-        if(assignedRole.isPresent()){
-            updatedRoleHasPermission.setRole(assignedRole.get());
-        }
+        assignedRole.ifPresent(updatedRoleHasPermission::setRole);
         updatedRoleHasPermission.setPermission((Permission[]) permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())).toArray());
         updatedRoleHasPermission.setStatus(roleHasPermission.getStatus());
         Optional<Users> updated_by = usersRepo.findById(roleHasPermission.getUpdated_by());
-        if(updated_by.isPresent()){
-            updatedRoleHasPermission.setUpdated_by(updated_by.get());
-        }
+        updated_by.ifPresent(updatedRoleHasPermission::setUpdated_by);
         updatedRoleHasPermission.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         return Optional.of(roleHasPermissionRepo.save(updatedRoleHasPermission));
     }
