@@ -1,11 +1,12 @@
 package com.hajj.hajj.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.hajj.hajj.DTO.BranchRequest;
@@ -13,6 +14,7 @@ import com.hajj.hajj.model.Branch;
 import com.hajj.hajj.service.BranchService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.server.ResponseStatusException;
 
 @CrossOrigin
 @RestController
@@ -27,8 +29,9 @@ public class BranchController{
     }
 
     @GetMapping("/{id}")
-    public Optional<Branch> getBranchById(@PathVariable Long id){
-        return branchService.getBranchById(id);
+    public Optional<Branch> getBranchById(@PathVariable Long id, HttpServletResponse resp) {
+
+            return branchService.getBranchById(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)

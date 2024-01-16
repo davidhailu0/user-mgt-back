@@ -65,7 +65,7 @@ public class AuthController {
             Map<String, Object> error = new HashMap<>();
             error.put("status", "failed");
             error.put("message", "Invalid Username or Password");
-            resp.setStatus(401);
+            resp.setStatus(403);
             return error;
         }
     }
