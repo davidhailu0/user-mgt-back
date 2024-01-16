@@ -96,8 +96,18 @@ public class HajjController {
         return hujjajRepo.findHUjjajByPaidStatus(false);
     }
     @GetMapping("/payment_code/{payment_code}")
-    public Optional<HUjjaj> getHajjByPaymentCode(@PathVariable String payment_code, HttpServletResponse resp){
-        return Optional.ofNullable(hujjajRepo.findHUjjajByPaymentCode(payment_code).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found")));
+    public Object getHajjByPaymentCode(@PathVariable String payment_code, HttpServletResponse resp){
+        Optional<HUjjaj> check = hujjajRepo.findHUjjajByPaymentCode(payment_code);
+        if(check.isEmpty()){
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "The Payment Code "+payment_code+" is does not exist");
+            error.put("status", "failed");
+            return error;
+        }
+        Map<String, Object> success = new HashMap<>();
+        success.put("status", "success");
+        success.put("data", check.get());
+        return success;
     }
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {
@@ -180,7 +190,7 @@ public class HajjController {
 
     @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
-    public  Object CHECK_hujaj_transaction(@RequestBody HujajRequest hUjjaj, HttpServletRequest request,Users checker)
+    public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj, HttpServletRequest request)
     {
 
 //   Accept values from user and check the transaction
@@ -208,10 +218,11 @@ public class HajjController {
 
                 "}";
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody,headers);
+        Map<String, Object> responseBody;
         try {
             ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
 
-            Map<String, Object> responseBody = responseEntity.getBody();
+            responseBody = responseEntity.getBody();
 
             if (responseBody != null) {
                 Object MSGSTAT = responseBody.get("MSGSTAT");
@@ -222,7 +233,9 @@ public class HajjController {
                 }
                 else
                 {
-                    return naration;
+                    Object  TR=responseBody.get(("trbody"));
+                    updateTable(paymentcode,hUjjaj,user);
+                    Post_to_hajserver(hUjjaj);
                 }
             }
             else {
@@ -240,6 +253,7 @@ public class HajjController {
 //        update mysql table based oon payment code
 //        and post to hajj seerver
 
+        return responseBody;
     }
 
     public boolean updateTable(String paymentCode,HUjjaj hujajRequest,Users checker){
