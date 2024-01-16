@@ -9,6 +9,7 @@ import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UsersRepo;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @CrossOrigin()
@@ -83,9 +85,19 @@ public class HajjController {
         return hujjajRepo.findAll();
     }
 
+
+    @GetMapping("/hajjList/paid")
+    public List<HUjjaj> getAllPaid(){
+        return hujjajRepo.findHUjjajByPaidStatus(true);
+    }
+
+    @GetMapping("/hajjList/unpaid")
+    public List<HUjjaj> getAllUnpaid(){
+        return hujjajRepo.findHUjjajByPaidStatus(false);
+    }
     @GetMapping("/payment_code/{payment_code}")
-    public Optional<HUjjaj> getHajjByPaymentCode(@PathVariable String payment_code){
-        return hujjajRepo.findHUjjajByPaymentCode(payment_code);
+    public Optional<HUjjaj> getHajjByPaymentCode(@PathVariable String payment_code, HttpServletResponse resp){
+        return Optional.ofNullable(hujjajRepo.findHUjjajByPaymentCode(payment_code).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found")));
     }
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {

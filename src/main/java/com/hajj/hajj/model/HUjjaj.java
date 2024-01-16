@@ -1,5 +1,6 @@
 package com.hajj.hajj.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,9 +54,11 @@ public class HUjjaj {
     String AUTH_TIMESTAMP;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Maker_Id",referencedColumnName = "id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     Users Maker_Id ;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Checker_Id",referencedColumnName = "id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     Users Checker_Id;
 
     Timestamp created_at;
