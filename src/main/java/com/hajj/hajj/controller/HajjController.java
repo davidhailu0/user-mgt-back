@@ -110,7 +110,7 @@ public class HajjController {
 
     }
 
-    @PreAuthorize("hasRole('maker')")
+//    @PreAuthorize("hasRole('maker')")
     @PostMapping("/make_hajj_trans")
     public Object make_hujaj_transaction(@RequestBody HUjjaj hujaj,HttpServletRequest request)
 
@@ -141,13 +141,24 @@ public class HajjController {
         if (amount <= amount_inAccount){
                 hujaj.setMaker_Id(user);
                 try {
+//                   find by payment
+                if(!null)
+                {
                     hujjajRepo.save(hujaj);
+
                 }
-                catch(Exception e){
+                else {
                     Map<String, Object> error = new HashMap<>();
                     error.put("message", "The Payment Code "+hujaj.getPayment_code()+" is already registered");
                     error.put("status", "failed");
                     return error;
+                }
+
+                }
+                catch(Exception e){
+
+                    return  e.getMessage();
+
                 }
                 Map<String, Object> success = new HashMap<>();
                 success.put("message", "Transaction Made Successfully");
@@ -170,7 +181,6 @@ public class HajjController {
         String jwtToken = request.getHeader("Authorization");
         String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
-
 
 
         String amount=hUjjaj.getAmount();
