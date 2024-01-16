@@ -68,12 +68,22 @@ public class SecurityConfig {
          .exceptionHandling(exp->exp.authenticationEntryPoint(
             (request, response, authException) ->{
                     response.setContentType("application/json");
-                    if(response.getStatus()!=401){
+                    if(response.getStatus()==404){
                         response.getWriter().write(
                                 """
                                        {
                                         "status":"failed",
                                         "error":"The Resource you requested can not be found"
+                                       }
+                                        """
+                        );
+                    }
+                    else if(response.getStatus()==403){
+                        response.getWriter().write(
+                                """
+                                       {
+                                        "status":"failed",
+                                        "error":"Invalid request"
                                        }
                                         """
                         );

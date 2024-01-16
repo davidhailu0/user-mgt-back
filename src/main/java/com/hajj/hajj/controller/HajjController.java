@@ -9,10 +9,7 @@ import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -25,7 +22,7 @@ import java.util.*;
 import org.springframework.core.ParameterizedTypeReference;
 
 
-@CrossOrigin(origins = "http://10.11.0.46:3006")
+@CrossOrigin()
 @RestController
 @RequestMapping("/api/v1")
 public class HajjController {
@@ -221,6 +218,13 @@ public class HajjController {
 
 //        update mysql table based oon payment code
 //        and post to hajj seerver
+
+    }
+
+    public void updateTable(HujajRequest hujajRequest){
+        if(hujajRequest.getId()==null){
+
+        }
 
     }
 
