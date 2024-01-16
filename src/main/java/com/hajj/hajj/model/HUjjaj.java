@@ -23,6 +23,7 @@ public class HUjjaj {
     String passport_number;
     String  birth_date;
     String service_package;
+    @Column(unique = true)
     String  payment_code;
     String amount;
     boolean paid ;
