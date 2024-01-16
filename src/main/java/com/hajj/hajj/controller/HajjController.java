@@ -35,6 +35,47 @@ public class HajjController {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @GetMapping("/get_nameQuery/{account_number}")
+    public  Object get_nameQuery(@PathVariable String account_number) {
+
+        final String name_Query_api = env.getProperty("name_Query")+ account_number;
+		String token=env.getProperty("wso2Token");
+        RestTemplate restTemplate=new RestTemplate();
+        HttpHeaders headers =new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(name_Query_api, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
+
+            Map<String, Object> responseBody = responseEntity.getBody();
+
+            if (responseBody != null) {
+                Object status = responseBody.get("status");
+                if ("FAILURE".equals(status)) {
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("message", responseBody.get("error_description"));
+                    error.put("status", "Error");
+                    return error;
+
+
+                }
+                else
+                {
+                    return responseBody;
+                }
+            }
+            else {
+                return  "Response body is empty or null";
+            }
+        }
+        catch (HttpClientErrorException ex) {
+            // Handle unauthorized error
+           return ex.getMessage();
+        }
+
+    }
+
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code)
     {
