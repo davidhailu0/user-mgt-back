@@ -22,6 +22,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.core.ParameterizedTypeReference;
+
+
 @CrossOrigin(origins = "http://10.11.0.46:3006")
 @RestController
 @RequestMapping("/api/v1")
@@ -127,15 +130,64 @@ public class HajjController {
 
     @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
-    public  Object CHECK_hujaj_transaction()
+    public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj)
     {
 
 //   Accept values from user and check the transaction
 //        call wso2 end point post transaction
+
+
+        String amount=hUjjaj.getAmount();
+        String  draccount=hUjjaj.getAccount_number();
+        String  naration= hUjjaj.getNARRATION();
+        String paymentcode=hUjjaj.getPayment_code();
+
+        String apiUrl=env.getProperty("fundtransAPi");
+        String token=env.getProperty("wso2Token");
+        RestTemplate restTemplate=new RestTemplate();
+        HttpHeaders headers=new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String jsonBody = "{ " +
+                "\"Amount\":" +"\""+ amount + "\"" + ","+
+                "\"Draccount\":" +"\""+ draccount + "\"" + ","+
+                "\"Narrative\": " +"\""+ naration + "\"" + ","+
+                "\"PaymentCode\": " +"\""+ paymentcode + "\"" +
+
+                "}";
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody,headers);
+        try {
+            ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
+
+            Map<String, Object> responseBody = responseEntity.getBody();
+
+            if (responseBody != null) {
+                Object MSGSTAT = responseBody.get("MSGSTAT");
+                if ("FAILURE".equals(MSGSTAT)) {
+                    Object EDESC = responseBody.get("EDESC");
+                    String EDESC_s = EDESC.toString();
+                    return  EDESC_s;
+                }
+                else
+                {
+                    return naration;
+                }
+            }
+            else {
+                return  "Response body is empty or null";
+            }
+        }
+        catch (HttpClientErrorException ex) {
+            // Handle unauthorized error
+          return   ex.getMessage();
+        }
+
+
+
+
 //        update mysql table based oon payment code
 //        and post to hajj seerver
 
-        return null;
     }
 
 
