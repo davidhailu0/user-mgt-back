@@ -37,10 +37,12 @@ public class RoleHasPermissionService {
     @Autowired
     UsersRepo usersRepo;
 
-    @PostConstruct
-    void addPermissionForRoles(){
-
-    }
+//    @PostConstruct
+//    void addPermissionForRoles(){
+//        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+//        roleHasPermissionRepo.save(new RoleHasPermission(roleRepo.findById(1L).get(), List.of(permissionRepo.findById(2L).get()),null,null,time,time,"Active"));
+//        roleHasPermissionRepo.save(new RoleHasPermission(roleRepo.findById(2L).get(), List.of(permissionRepo.findById(1L).get()),null,null,time,time,"Active"));
+//    }
 
     public List<RoleHasPermission> getAllRolesWithPermissions(){
         return roleHasPermissionRepo.findAll();
@@ -54,7 +56,7 @@ public class RoleHasPermissionService {
         RoleHasPermission newRoleHasPermission = new RoleHasPermission();
         Optional<Role> assignedRole = roleRepo.findById(roleHasPermission.getRole());
         assignedRole.ifPresent(newRoleHasPermission::setRole);
-        newRoleHasPermission.setPermission((Permission[]) permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())).toArray());
+        newRoleHasPermission.setPermissions(permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())));
         newRoleHasPermission.setStatus(roleHasPermission.getStatus());
         Optional<Users> created_by = usersRepo.findById(roleHasPermission.getCreated_by());
         if(created_by.isPresent()){
@@ -74,7 +76,7 @@ public class RoleHasPermissionService {
         RoleHasPermission updatedRoleHasPermission = roleHasPermissionRepo.findById(id).get();
         Optional<Role> assignedRole = roleRepo.findById(roleHasPermission.getRole());
         assignedRole.ifPresent(updatedRoleHasPermission::setRole);
-        updatedRoleHasPermission.setPermission((Permission[]) permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())).toArray());
+        updatedRoleHasPermission.setPermissions(permissionRepo.findAllById(Arrays.asList(roleHasPermission.getPermission())));
         updatedRoleHasPermission.setStatus(roleHasPermission.getStatus());
         Optional<Users> updated_by = usersRepo.findById(roleHasPermission.getUpdated_by());
         updated_by.ifPresent(updatedRoleHasPermission::setUpdated_by);
