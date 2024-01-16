@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,13 @@ public class UserRoleService {
 
     @Autowired
     UsersRepo usersRepo;
+
+//    @PostConstruct
+//    void addRoleToUsers(){
+//        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+//        userRoleRepo.save(new UserRole(roleRepo.findById(1L).get(),usersRepo.findById(1L).get(),null,null,time,time,"Active"));
+//        userRoleRepo.save(new UserRole(roleRepo.findById(2L).get(),usersRepo.findById(2L).get(),null,null,time,time,"Active"));
+//    }
 
     public List<UserRole> getAllUserRole(){
         return userRoleRepo.findAll();

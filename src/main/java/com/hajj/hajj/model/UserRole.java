@@ -42,4 +42,14 @@ public class UserRole{
     public UserRole(){
 
     }
+
+    public UserRole(Role role, Users user, Users assigned_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
+        this.role = role;
+        this.user = user;
+        this.assigned_by = assigned_by;
+        this.updated_by = updated_by;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.status = status;
+    }
 }

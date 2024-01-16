@@ -2,6 +2,7 @@ package com.hajj.hajj.model;
 
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -28,8 +29,7 @@ public class RoleHasPermission{
     @JoinColumn(name="role_id",referencedColumnName = "id")
     Role role;
     @OneToMany(cascade = CascadeType.REMOVE)
-    @JoinColumn(name="permission_id",referencedColumnName = "id")
-    Permission[] permission;
+    List<Permission> permissions;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
     Users created_by;
@@ -42,6 +42,16 @@ public class RoleHasPermission{
 
     public RoleHasPermission(){
 
+    }
+
+    public RoleHasPermission(Role role, List<Permission> permissions, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
+        this.role = role;
+        this.permissions = permissions;
+        this.created_by = created_by;
+        this.updated_by = updated_by;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.status = status;
     }
 }
 

@@ -26,6 +26,12 @@ public class RoleService {
     @Autowired
     UsersRepo userRepo;
 
+//    @PostConstruct
+//    void addRoles(){
+//        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+//        roleRepo.save(new Role("maker","This User create the transaction request","Active",null,null,time,time));
+//        roleRepo.save(new Role("checker","This User authorizes the transaction","Active",null,null,time,time));
+//    }
 
     public List<Role> getAllRoles(){
         return roleRepo.findAll();

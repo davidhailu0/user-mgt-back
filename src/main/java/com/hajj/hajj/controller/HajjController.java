@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -108,7 +110,7 @@ public class HajjController {
 
     }
 
-//    @PreAuthorize("hasRole('maker')")
+    @PreAuthorize("hasRole('maker')")
     @PostMapping("/make_hajj_trans")
     public Object make_hujaj_transaction(@RequestBody HUjjaj hujaj,HttpServletRequest request)
 
@@ -138,7 +140,15 @@ public class HajjController {
 //Validation between amount and amount_in account
         if (amount <= amount_inAccount){
                 hujaj.setMaker_Id(user);
-                hujjajRepo.save(hujaj);
+                try {
+                    hujjajRepo.save(hujaj);
+                }
+                catch(Exception e){
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("message", "The Payment Code "+hujaj.getPayment_code()+" is already registered");
+                    error.put("status", "failed");
+                    return error;
+                }
                 Map<String, Object> success = new HashMap<>();
                 success.put("message", "Transaction Made Successfully");
                 success.put("status", "Success");
