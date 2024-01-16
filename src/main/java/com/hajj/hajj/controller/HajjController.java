@@ -1,6 +1,8 @@
 package com.hajj.hajj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hajj.hajj.DTO.HujajRequest;
+import com.hajj.hajj.DTO.ResponseDTO;
 import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
@@ -11,19 +13,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin(origins = "http://10.11.0.46:3006")
 @RestController
@@ -35,11 +32,17 @@ public class HajjController {
     @Autowired
     HujjajRepo hujjajRepo;
 
+    @Autowired
+    UsersRepo usersRepo;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @GetMapping("/hajjList")
+    public List<HUjjaj> getAllList(){
+        return hujjajRepo.findAll();
+    }
     @GetMapping("/get_hujaj/{payment_code}")
-    public  Object get_hujaj(@PathVariable String payment_code)
-    {
+    public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {
         final String apiUrl = env.getProperty("hajjApi")+ payment_code;
 
         RestTemplate restTemplate = new RestTemplate();
@@ -51,40 +54,46 @@ public class HajjController {
 
             ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, String.class);
             // Process the response
-           return  response.getBody();
+           return  Objects.requireNonNull(response.getBody());
         }
 
         catch (HttpClientErrorException ex) {
             // Handle unauthorized error
-           return  ex.getMessage();
+            ObjectMapper objectMapper1 = new ObjectMapper();
+            return  objectMapper1.readValue(ex.getMessage().replace("404 Not Found:","").trim().substring(0,ex.getMessage().replace("404 Not Found:","").length()-2).substring(1), ResponseDTO.class);
         }
 
     }
 
+    @PreAuthorize("hasRole('maker')")
     @PostMapping("/make_hajj_trans")
-    public Object make_hujaj_transaction(@RequestBody HUjjaj hUjjaj)
+    public Object make_hujaj_transaction(@RequestBody HujajRequest hujaj)
 
     {
-        String  first_name= hUjjaj.getFirst_name();
-        String  last_name= hUjjaj.getFirst_name();
-        String  middle_name= hUjjaj.getFirst_name();
-        String  phone= hUjjaj.getFirst_name();
-        String  photo_url= hUjjaj.getFirst_name();
-        String  passport_number= hUjjaj.getFirst_name();
-        String  birth_date= hUjjaj.getFirst_name();
-        String  service_package= hUjjaj.getFirst_name();
-        String  payment_code= hUjjaj.getPayment_code();
-        boolean  paid= false;
+        HUjjaj newHajj = new HUjjaj();
+        newHajj.setFirst_name(hujaj.getFirst_name());
+        newHajj.setLast_name(hujaj.getLast_name());
+        newHajj.setMiddle_name(hujaj.getMiddle_name());
+        newHajj.setPhone(hujaj.getPhone());
+        newHajj.setPhoto_url(hujaj.getPhoto_url());
+        newHajj.setPassport_number(hujaj.getPassport_number());
+        newHajj.setBirth_date(hujaj.getBirth_date());
+        newHajj.setService_package(hujaj.getService_package());
+        newHajj.setPayment_code(hujaj.getPayment_code());
+        newHajj.setPaid(false);
+        newHajj.setAccount_number(hujaj.getAccount_number());
+        newHajj.setAccount_holder(hujaj.getAccount_holder());
+        newHajj.setTrans_ref_no(hujaj.getTrans_ref_no());
         String  bank_code= env.getProperty("bank_code");
-        String  account_number= hUjjaj.getAccount_number();
-        String  account_holder= hUjjaj.getAccount_holder();
-        String  trans_ref_no= hUjjaj.getTrans_ref_no();
+        newHajj.setBranch_name(bank_code);
         Timestamp  date= Timestamp.valueOf(LocalDateTime.now());
+        newHajj.setCreated_at(date);
+        newHajj.setUpdated_at(date);
         double amount;
         double amount_inAccount;
         try {
-            amount = Double.parseDouble(hUjjaj.getAmount());
-            amount_inAccount = Double.parseDouble(hUjjaj.getAmount_inaccount());
+            amount = Double.parseDouble(hujaj.getAmount());
+            amount_inAccount = Double.parseDouble(hujaj.getAmount_inaccount());
         }
         catch(NumberFormatException | NullPointerException e){
             Map<String, Object> error = new HashMap<>();
@@ -93,9 +102,18 @@ public class HajjController {
             return error;
         }
 
+        Optional<Users> maker = usersRepo.findById(hujaj.getMaker_Id());
+        if(maker.isEmpty()){
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Please Set Maker ID");
+            error.put("status", "failed");
+            return error;
+        }
+
 //Validation between amount and amount_in account
         if (amount <= amount_inAccount){
-                hujjajRepo.save(hUjjaj);
+                newHajj.setMaker_Id(maker.get());
+                hujjajRepo.save(newHajj);
                 Map<String, Object> success = new HashMap<>();
                 success.put("message", "Transaction Made Successfully");
                 success.put("status", "Success");
@@ -107,6 +125,7 @@ public class HajjController {
         return error;
     }
 
+    @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
     public  Object CHECK_hujaj_transaction()
     {

@@ -52,9 +52,7 @@ public class UserService {
     public Users saveUser(@NonNull UsersRequest userInfo){
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
-        if(userBranch.isPresent()){
-            newUser.setBranch(userBranch.get());
-        }
+        userBranch.ifPresent(newUser::setBranch);
         newUser.setUsername(userInfo.getUsername());
         newUser.setPassword(passwordEncoder.encode(userInfo.getPassword()));
         newUser.setSalt(userInfo.getSalt());
@@ -79,17 +77,13 @@ public class UserService {
             updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
         Optional<Branch> userBranch = branchRepo.findById(updatedUser.getBranch());
-        if(userBranch.isPresent()){
-            updateUser.setBranch(userBranch.get());
-        }
+        userBranch.ifPresent(updateUser::setBranch);
         updateUser.setUsername(updatedUser.getUsername());
         updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         updateUser.setSalt(updatedUser.getSalt());
         updateUser.setStatus(updatedUser.getStatus());
         Optional<Users> updated_by = userRepo.findById(updatedUser.getUpdated_by());
-        if(updated_by.isPresent()){
-            updateUser.setUpdated_by(updated_by.get());
-        }
+        updated_by.ifPresent(updateUser::setUpdated_by);
         updateUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         return Optional.of(userRepo.save(updateUser));
     }
