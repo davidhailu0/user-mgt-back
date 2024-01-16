@@ -102,8 +102,8 @@ public class HajjController {
         }
 
         catch (HttpClientErrorException ex) {
-            // Handle unauthorized error
-            return  ex.getMessage();
+            return ex.getMessage();
+
         }
 
     }
