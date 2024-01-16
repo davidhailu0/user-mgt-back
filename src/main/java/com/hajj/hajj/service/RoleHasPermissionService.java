@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,11 @@ public class RoleHasPermissionService {
 
     @Autowired
     UsersRepo usersRepo;
+
+    @PostConstruct
+    void addPermissionForRoles(){
+
+    }
 
     public List<RoleHasPermission> getAllRolesWithPermissions(){
         return roleHasPermissionRepo.findAll();

@@ -3,10 +3,12 @@ package com.hajj.hajj.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hajj.hajj.DTO.HujajRequest;
 import com.hajj.hajj.DTO.ResponseDTO;
+import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UsersRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
@@ -34,6 +36,9 @@ public class HajjController {
 
     @Autowired
     UsersRepo usersRepo;
+
+    @Autowired
+    JWTUtil util;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -75,6 +80,11 @@ public class HajjController {
     public List<HUjjaj> getAllList(){
         return hujjajRepo.findAll();
     }
+
+    @GetMapping("/payment_code/{payment_code}")
+    public Optional<HUjjaj> getHajjByPaymentCode(@PathVariable String payment_code){
+        return hujjajRepo.findHUjjajByPaymentCode(payment_code);
+    }
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {
         final String apiUrl = env.getProperty("hajjApi")+ payment_code;
@@ -93,36 +103,20 @@ public class HajjController {
 
         catch (HttpClientErrorException ex) {
             // Handle unauthorized error
-            ObjectMapper objectMapper1 = new ObjectMapper();
-            return  objectMapper1.readValue(ex.getMessage().replace("404 Not Found:","").trim().substring(0,ex.getMessage().replace("404 Not Found:","").length()-2).substring(1), ResponseDTO.class);
+            return  ex.getMessage();
         }
 
     }
 
-    @PreAuthorize("hasRole('maker')")
+//    @PreAuthorize("hasRole('maker')")
     @PostMapping("/make_hajj_trans")
-    public Object make_hujaj_transaction(@RequestBody HujajRequest hujaj)
+    public Object make_hujaj_transaction(@RequestBody HUjjaj hujaj,HttpServletRequest request)
 
     {
-        HUjjaj newHajj = new HUjjaj();
-        newHajj.setFirst_name(hujaj.getFirst_name());
-        newHajj.setLast_name(hujaj.getLast_name());
-        newHajj.setMiddle_name(hujaj.getMiddle_name());
-        newHajj.setPhone(hujaj.getPhone());
-        newHajj.setPhoto_url(hujaj.getPhoto_url());
-        newHajj.setPassport_number(hujaj.getPassport_number());
-        newHajj.setBirth_date(hujaj.getBirth_date());
-        newHajj.setService_package(hujaj.getService_package());
-        newHajj.setPayment_code(hujaj.getPayment_code());
-        newHajj.setPaid(false);
-        newHajj.setAccount_number(hujaj.getAccount_number());
-        newHajj.setAccount_holder(hujaj.getAccount_holder());
-        newHajj.setTrans_ref_no(hujaj.getTrans_ref_no());
         String  bank_code= env.getProperty("bank_code");
-        newHajj.setBranch_name(bank_code);
         Timestamp  date= Timestamp.valueOf(LocalDateTime.now());
-        newHajj.setCreated_at(date);
-        newHajj.setUpdated_at(date);
+        hujaj.setCreated_at(date);
+        hujaj.setUpdated_at(date);
         double amount;
         double amount_inAccount;
         try {
@@ -136,18 +130,15 @@ public class HajjController {
             return error;
         }
 
-        Optional<Users> maker = usersRepo.findById(hujaj.getMaker_Id());
-        if(maker.isEmpty()){
-            Map<String, Object> error = new HashMap<>();
-            error.put("message", "Please Set Maker ID");
-            error.put("status", "failed");
-            return error;
-        }
+        String jwtToken = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+
 
 //Validation between amount and amount_in account
         if (amount <= amount_inAccount){
-                newHajj.setMaker_Id(maker.get());
-                hujjajRepo.save(newHajj);
+                hujaj.setMaker_Id(user);
+                hujjajRepo.save(hujaj);
                 Map<String, Object> success = new HashMap<>();
                 success.put("message", "Transaction Made Successfully");
                 success.put("status", "Success");
@@ -161,11 +152,15 @@ public class HajjController {
 
     @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
-    public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj)
+    public  Object CHECK_hujaj_transaction(@RequestBody HujajRequest hUjjaj, HttpServletRequest request)
     {
 
 //   Accept values from user and check the transaction
 //        call wso2 end point post transaction
+        String jwtToken = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+
 
 
         String amount=hUjjaj.getAmount();
@@ -221,11 +216,36 @@ public class HajjController {
 
     }
 
-    public void updateTable(HujajRequest hujajRequest){
-        if(hujajRequest.getId()==null){
+    public boolean updateTable(String paymentCode,HUjjaj hujajRequest,Users checker){
+        Optional<HUjjaj> updatedHujaj = hujjajRepo.findHUjjajByPaymentCode(paymentCode);
+        if(updatedHujaj.isPresent()){
+            HUjjaj hujjaj = updatedHujaj.get();
+            hujjaj.setEXTERNAL_REF_NO(hujajRequest.getEXTERNAL_REF_NO());
+            hujjaj.setTrans_ref_no(hujjaj.getTRN_REF_NO());
+            hujjaj.setAC_BRANCH(hujajRequest.getAC_BRANCH());
+            hujjaj.setBranch_name(hujajRequest.getBranch_name());
+            hujjaj.setNARRATION(hujajRequest.getNARRATION());
+            hujjaj.setCUST_NAME(hujajRequest.getCUST_NAME());
+            hujjaj.setTRN_REF_NO(hujajRequest.getTRN_REF_NO());
+            hujjaj.setAC_NO(hujajRequest.getAC_NO());
+            hujjaj.setLCY_AMOUNT(hujajRequest.getLCY_AMOUNT());
+            hujjaj.setRELATED_CUSTOMER(hujajRequest.getRELATED_CUSTOMER());
+            hujjaj.setRELATED_ACCOUNT(hujajRequest.getRELATED_ACCOUNT());
+            hujjaj.setTRN_DT(hujajRequest.getTRN_DT());
+            hujjaj.setVALUE_DT(hujajRequest.getVALUE_DT());
+            hujjaj.setUSERID(hujajRequest.getUSERID());
+            hujjaj.setAVLDAYS(hujajRequest.getAVLDAYS());
+            hujjaj.setAUTH_ID(hujajRequest.getAUTH_ID());
+            hujjaj.setSTMT_DT(hujajRequest.getSTMT_DT());
+            hujjaj.setNODE(hujajRequest.getNODE());
+            hujjaj.setAC_CCY(hujajRequest.getAC_CCY());
+            hujjaj.setAUTH_TIMESTAMP(hujajRequest.getAUTH_TIMESTAMP());
+            hujjaj.setChecker_Id(checker);
+            hujjajRepo.save(hujjaj);
+            return true;
 
         }
-
+        return false;
     }
 
 

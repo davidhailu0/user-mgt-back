@@ -42,8 +42,6 @@ public class HujajRequest {
     String NODE;
     String AC_CCY ;
     String AUTH_TIMESTAMP;
-    Long Maker_Id ;
-    Long Checker_Id;
 
 
 }

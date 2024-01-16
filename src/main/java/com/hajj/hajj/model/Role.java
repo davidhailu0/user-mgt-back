@@ -37,4 +37,14 @@ public class Role{
     public Role(){
 
     }
+
+    public Role(String name, String description, String status, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.created_by = created_by;
+        this.updated_by = updated_by;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+    }
 }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class RoleService {
 
     @Autowired
     UsersRepo userRepo;
+
 
     public List<Role> getAllRoles(){
         return roleRepo.findAll();
@@ -59,9 +61,7 @@ public class RoleService {
         updatedRole.setStatus(role.getStatus());
         updatedRole.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         Optional<Users> updated_by = userRepo.findById(role.getUpdated_by());
-        if(updated_by.isPresent()){
-            updatedRole.setUpdated_by(updated_by.get());
-        }
+        updated_by.ifPresent(updatedRole::setUpdated_by);
         return Optional.of(roleRepo.save(updatedRole));
     }
 }
