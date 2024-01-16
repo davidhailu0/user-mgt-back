@@ -168,7 +168,7 @@ public class HajjController {
 
     @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
-    public  Object CHECK_hujaj_transaction(@RequestBody HujajRequest hUjjaj, HttpServletRequest request)
+    public  Object CHECK_hujaj_transaction(@RequestBody HujajRequest hUjjaj, HttpServletRequest request,Users checker)
     {
 
 //   Accept values from user and check the transaction
@@ -176,7 +176,6 @@ public class HajjController {
         String jwtToken = request.getHeader("Authorization");
         String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
-
 
         String amount=hUjjaj.getAmount();
         String  draccount=hUjjaj.getAccount_number();
@@ -263,5 +262,55 @@ public class HajjController {
         return false;
     }
 
+public  Object Post_to_hajserver(@RequestBody HUjjaj hUjjaj)
+{
+
+    String amount=hUjjaj.getAmount();
+    String  account_number=hUjjaj.getAccount_number();
+    String  account_holder=hUjjaj.getAccount_holder();
+    String  naration= hUjjaj.getNARRATION();
+    String paymentcode=hUjjaj.getPayment_code();
+    String bank_code =env.getProperty("bank_code");
+    String refrence_number=hUjjaj.getTrans_ref_no();
+    String date=hUjjaj.getTRN_DT();
+
+
+    final  String apiUrl=env.getProperty("hajjApi_post");
+    RestTemplate restTemplate=new RestTemplate();
+      HttpHeaders headers =  new HttpHeaders();
+    headers.add("x-Authorization", env.getProperty("x-auth"));
+    headers.add("x-Authorization-Secret", env.getProperty("x-secret"));
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    String jsonBody = "{ " +
+            "\"payment_code\":" +"\""+ paymentcode + "\"" + ","+
+            "\"paid\":" +"\""+ true + "\"" + ","+
+            "\"bank_code\": " +"\""+ bank_code + "\"" + ","+
+            "\"account_number\": " +"\""+ account_number + "\"" +
+            "\"account_holder\":" +"\""+ account_holder + "\"" + ","+
+            "\"refrence_number\":" +"\""+ true + "\"" + ","+
+            "\"date\": " +"\""+ date + "\"" + ","+
+            "\"amount\": " +"\""+ amount + "\"" +
+
+            "}";
+
+    HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody,headers);
+    try {
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        Map<String, Object> responseBody = responseEntity.getBody();
+
+        if (responseBody != null) {
+            return  responseBody;
+        }
+        else {
+            return  "Response body is empty or null";
+        }
+    }
+    catch (HttpClientErrorException ex) {
+        // Handle unauthorized error
+        return   ex.getMessage();
+    }
+
+}
 
 }
