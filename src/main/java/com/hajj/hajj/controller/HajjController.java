@@ -57,8 +57,6 @@ public class HajjController {
                     error.put("message", responseBody.get("error_description"));
                     error.put("status", "Error");
                     return error;
-
-
                 }
                 else
                 {
@@ -75,7 +73,6 @@ public class HajjController {
         }
 
     }
-
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code)
     {
