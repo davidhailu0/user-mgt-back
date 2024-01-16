@@ -92,14 +92,13 @@ public class HajjController {
         }
 
         catch (HttpClientErrorException ex) {
-            // Handle unauthorized error
-            ObjectMapper objectMapper1 = new ObjectMapper();
-            return  objectMapper1.readValue(ex.getMessage().replace("404 Not Found:","").trim().substring(0,ex.getMessage().replace("404 Not Found:","").length()-2).substring(1), ResponseDTO.class);
+            return ex.getMessage();
+
         }
 
     }
 
-    @PreAuthorize("hasRole('maker')")
+//    @PreAuthorize("hasRole('maker')")
     @PostMapping("/make_hajj_trans")
     public Object make_hujaj_transaction(@RequestBody HujajRequest hujaj)
 
