@@ -136,29 +136,24 @@ public class HajjController {
         String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
 
-
-//Validation between amount and amount_in account
         if (amount <= amount_inAccount){
                 hujaj.setMaker_Id(user);
                 try {
-//                   find by payment
-                if(!null)
-                {
-                    hujjajRepo.save(hujaj);
-
-                }
-                else {
-                    Map<String, Object> error = new HashMap<>();
-                    error.put("message", "The Payment Code "+hujaj.getPayment_code()+" is already registered");
-                    error.put("status", "failed");
-                    return error;
-                }
+                    Optional<HUjjaj> fetchHujaj = hujjajRepo.findHUjjajByPaymentCode(hujaj.getPayment_code());
+                    if(fetchHujaj.isEmpty())
+                    {
+                        hujjajRepo.save(hujaj);
+                    }
+                    else {
+                        Map<String, Object> error = new HashMap<>();
+                        error.put("message", "The Payment Code "+hujaj.getPayment_code()+" is already registered");
+                        error.put("status", "failed");
+                        return error;
+                    }
 
                 }
                 catch(Exception e){
-
                     return  e.getMessage();
-
                 }
                 Map<String, Object> success = new HashMap<>();
                 success.put("message", "Transaction Made Successfully");
