@@ -65,12 +65,22 @@ public class SecurityConfig {
                  .authenticated()
          )
          .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//         .exceptionHandling(exp->exp.authenticationEntryPoint(
-//            (request, response, authException) ->{
-//                    response.setContentType("application/json");
-//            }
-//         ))
-//         .authenticationProvider(authenticationProvider)
+         .exceptionHandling(exp->exp.authenticationEntryPoint(
+            (request, response, authException) ->{
+                    response.setContentType("application/json");
+                    if(response.getStatus()!=401){
+                        response.getWriter().write(
+                                """
+                                       {
+                                        "status":"failed",
+                                        "error":"The Resource you requested can not be found"
+                                       }
+                                        """
+                        );
+                    }
+            }
+         ))
+         .authenticationProvider(authenticationProvider)
          .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
          .build();
 
