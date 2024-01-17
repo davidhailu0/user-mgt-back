@@ -228,8 +228,11 @@ public class HajjController {
                 Object MSGSTAT = responseBody.get("MSGSTAT");
                 if ("FAILURE".equals(MSGSTAT)) {
                     Object EDESC = responseBody.get("EDESC");
-                    String EDESC_s = EDESC.toString();
-                    return  EDESC_s;
+
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("error", "Unable To make Fund Transfer. Due to "+ EDESC);
+                    error.put("success", "false");
+                    return error;
                 }
                 else
                 {
@@ -241,17 +244,29 @@ public class HajjController {
 
                    }
                    else {
-                        return "There is no data on this code";
+                       Map<String, Object> error = new HashMap<>();
+                       error.put("error", "NO Data Found");
+                       error.put("success", "false");
+                       return error;
+
                    }
                 }
             }
             else {
-                return  "Response body is empty or null";
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "Response body is empty or null");
+                error.put("success", "false");
+                return error;
+
             }
         }
         catch (HttpClientErrorException ex) {
             // Handle unauthorized error
-          return   ex.getMessage();
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", ex.getMessage());
+            error.put("success", "false");
+            return error;
+
         }
 
 
@@ -334,12 +349,18 @@ public  Object Post_to_hajserver(@RequestBody HUjjaj hUjjaj)
             return  responseBody;
         }
         else {
-            return  "Response body is empty or null";
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Response body is empty or null");
+            error.put("success", "false");
+            return error;
         }
     }
     catch (HttpClientErrorException ex) {
         // Handle unauthorized error
-        return   ex.getMessage();
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        error.put("success", "false");
+        return error;
     }
 
 }
