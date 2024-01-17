@@ -13,6 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserDetailRepo extends JpaRepository<UserDetail,Long> {
-    @Query(value = "SELECT u from UserDetail u where u.user = :status")
-    Optional<UserDetail> findUserDetailByUser(@Param("id") Users user);
+    @Query(value = "SELECT u from UserDetail u where u.user = :user")
+    Optional<UserDetail> findUserDetailByUser(@Param("user") Users user);
 }

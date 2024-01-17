@@ -108,10 +108,16 @@ public class HajjController {
             error.put("status", "failed");
             return error;
         }
-        Map<String, Object> success = new HashMap<>();
-        success.put("status", "success");
-        success.put("data", check.get());
-        return success;
+        if(check.get().isPaid()){
+            Map<String, Object> success = new HashMap<>();
+            success.put("status", "success");
+            success.put("data", check.get());
+            return success;
+        }
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", "No Payment has not been made");
+        error.put("status", "failed");
+        return error;
     }
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {

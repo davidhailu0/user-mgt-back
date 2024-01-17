@@ -1,10 +1,13 @@
 package com.hajj.hajj.service;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.hajj.hajj.model.UserDetail;
+import com.hajj.hajj.repository.UserDetailRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
@@ -29,6 +32,9 @@ public class UserService {
 
     @Autowired
     UserRoleRepo userRoleRepo;
+
+    @Autowired
+    UserDetailRepo userDetailRepo;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -58,13 +64,22 @@ public class UserService {
         newUser.setSalt(userInfo.getSalt());
         newUser.setStatus(userInfo.getStatus());
         Optional<Users> created_by = userRepo.findById(userInfo.getCreated_by());
+        LocalDateTime now = LocalDateTime.now();
+        Date date = Date.valueOf(now.toLocalDate());
+        newUser.setCreated_at(Timestamp.valueOf(now));
+        newUser.setUpdated_at(Timestamp.valueOf(now));
+        UserDetail newUserDetail = new UserDetail();
+        newUserDetail.setFull_name(userInfo.getFullname());
+        newUserDetail.setUser(newUser);
+        newUserDetail.setStart_date(date);
+        newUserDetail.setStatus_changed_on(date);
         if(created_by.isPresent()){
             newUser.setCreated_by(created_by.get());
             newUser.setUpdated_by(created_by.get());
+            newUserDetail.setCreated_by(created_by.get());
+            newUserDetail.setUpdated_by(created_by.get());
         }
-        LocalDateTime now = LocalDateTime.now();
-        newUser.setCreated_at(Timestamp.valueOf(now));
-        newUser.setUpdated_at(Timestamp.valueOf(now));
+        userDetailRepo.save(newUserDetail);
         return userRepo.save(newUser);
     }
 
