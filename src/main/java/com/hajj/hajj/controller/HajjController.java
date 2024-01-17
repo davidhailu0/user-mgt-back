@@ -188,7 +188,7 @@ public class HajjController {
         return error;
     }
 
-    @PreAuthorize("hasRole('checker')")
+//    @PreAuthorize("hasRole('checker')")
     @PostMapping("/Check_hajj_trans")
     public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj, HttpServletRequest request)
     {
@@ -234,8 +234,15 @@ public class HajjController {
                 else
                 {
                     Object  TR=responseBody.get(("trbody"));
-                    updateTable(paymentcode,hUjjaj,user);
-                    Post_to_hajserver(hUjjaj);
+                   boolean  update_status = updateTable(paymentcode,hUjjaj,user);
+                   if(update_status == true)
+                   {
+                      return Post_to_hajserver(hUjjaj);
+
+                   }
+                   else {
+                        return "There is no data on this code";
+                   }
                 }
             }
             else {
@@ -248,12 +255,10 @@ public class HajjController {
         }
 
 
-
-
 //        update mysql table based oon payment code
 //        and post to hajj seerver
-
-        return responseBody;
+//
+//        return responseBody;
     }
 
     public boolean updateTable(String paymentCode,HUjjaj hujajRequest,Users checker){
@@ -311,7 +316,7 @@ public  Object Post_to_hajserver(@RequestBody HUjjaj hUjjaj)
             "\"payment_code\":" +"\""+ paymentcode + "\"" + ","+
             "\"paid\":" +"\""+ true + "\"" + ","+
             "\"bank_code\": " +"\""+ bank_code + "\"" + ","+
-            "\"account_number\": " +"\""+ account_number + "\"" +
+            "\"account_number\": " +"\""+ account_number + "\"" + ","+
             "\"account_holder\":" +"\""+ account_holder + "\"" + ","+
             "\"refrence_number\":" +"\""+ true + "\"" + ","+
             "\"date\": " +"\""+ date + "\"" + ","+
