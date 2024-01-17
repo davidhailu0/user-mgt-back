@@ -43,8 +43,6 @@ public class SecurityConfig {
     @Autowired
     AuthenticationProvider authenticationProvider;
 
-    @Autowired
-    CorsConfigurationSource corsConfigurationSource;
 
     @Value("${authorized.ip}")
     String authorizedIP;

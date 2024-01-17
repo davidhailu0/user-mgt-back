@@ -26,7 +26,7 @@ public class UserDetail{
     Long id;
     Date start_date;
     Date status_changed_on;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="user_id",referencedColumnName = "id")
     Users user;
     @NotBlank String full_name;

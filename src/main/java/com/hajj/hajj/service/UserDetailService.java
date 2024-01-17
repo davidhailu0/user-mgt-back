@@ -29,13 +29,18 @@ public class UserDetailService {
     @Autowired
     UsersRepo usersRepo;
 
-    @PostConstruct
-    void addUserDetail(){
-        Date date = Date.valueOf(LocalDate.now());
-        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
-        userDetailRepo.save(new UserDetail(date,date,usersRepo.findById(1L).get(),"Dawit Hailu",null,null,time,time,"Active"));
-        userDetailRepo.save(new UserDetail(date,date,usersRepo.findById(2L).get(),"Abdurezak Seid",null,null,time,time,"Active"));
-    }
+//    @PostConstruct
+//    void addUserDetail(){
+//        Date date = Date.valueOf(LocalDate.now());
+//        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+//        try {
+//            userDetailRepo.save(new UserDetail(date, date, usersRepo.findById(1L).get(), "Dawit Hailu", null, null, time, time, "Active"));
+//            userDetailRepo.save(new UserDetail(date, date, usersRepo.findById(2L).get(), "Abdurezak Seid", null, null, time, time, "Active"));
+//        }
+//        catch(Exception e){
+//            System.out.println("************************************************"+e.getMessage()+"**********************************");
+//        }
+//    }
 
     public List<UserDetail> getAllUserDetail(){
         return userDetailRepo.findAll();

@@ -10,6 +10,7 @@ public class UsersRequest{
     
     Long id;
     String username;
+    String fullname;
     String salt;
     String password;
     Long branch;
@@ -21,9 +22,10 @@ public class UsersRequest{
 
     }
 
-    public UsersRequest(String username, String salt, String password, Long branch, Long created_by, Long updated_by, String status) {
+    public UsersRequest(String username, String fullname,String salt, String password, Long branch, Long created_by, Long updated_by, String status) {
         this.username = username;
         this.salt = salt;
+        this.fullname = fullname;
         this.password = password;
         this.branch = branch;
         this.created_by = created_by;
