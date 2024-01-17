@@ -7,6 +7,7 @@ import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
+import com.hajj.hajj.repository.UserDetailRepo;
 import com.hajj.hajj.repository.UsersRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,6 +41,9 @@ public class HajjController {
 
     @Autowired
     UsersRepo usersRepo;
+
+    @Autowired
+    UserDetailRepo userDetailRepo;
 
     @Autowired
     JWTUtil util;
@@ -158,6 +162,7 @@ public class HajjController {
         String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
 
+        hujaj.setUSERID(userDetailRepo.findUserDetailByUser(user).get().getFull_name());
         if (amount <= amount_inAccount){
                 hujaj.setMaker_Id(user);
                 try {
@@ -280,7 +285,7 @@ public class HajjController {
             hujjaj.setVALUE_DT(hujajRequest.getVALUE_DT());
             hujjaj.setUSERID(hujajRequest.getUSERID());
             hujjaj.setAVLDAYS(hujajRequest.getAVLDAYS());
-            hujjaj.setAUTH_ID(hujajRequest.getAUTH_ID());
+            hujjaj.setAUTH_ID(userDetailRepo.findUserDetailByUser(checker).get().getFull_name());
             hujjaj.setSTMT_DT(hujajRequest.getSTMT_DT());
             hujjaj.setNODE(hujajRequest.getNODE());
             hujjaj.setAC_CCY(hujajRequest.getAC_CCY());
