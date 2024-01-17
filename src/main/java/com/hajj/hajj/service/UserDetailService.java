@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,14 @@ public class UserDetailService {
 
     @Autowired
     UsersRepo usersRepo;
+
+    @PostConstruct
+    void addUserDetail(){
+        Date date = Date.valueOf(LocalDate.now());
+        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+        userDetailRepo.save(new UserDetail(date,date,usersRepo.findById(1L).get(),"Dawit Hailu",null,null,time,time,"Active"));
+        userDetailRepo.save(new UserDetail(date,date,usersRepo.findById(2L).get(),"Abdurezak Seid",null,null,time,time,"Active"));
+    }
 
     public List<UserDetail> getAllUserDetail(){
         return userDetailRepo.findAll();

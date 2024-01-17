@@ -26,6 +26,9 @@ public class UserDetail{
     Long id;
     Date start_date;
     Date status_changed_on;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="user_id",referencedColumnName = "id")
+    Users user;
     @NotBlank String full_name;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
@@ -39,5 +42,17 @@ public class UserDetail{
 
     public UserDetail(){
 
+    }
+
+    public UserDetail(Date start_date, Date status_changed_on, Users user,String full_name, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
+        this.start_date = start_date;
+        this.status_changed_on = status_changed_on;
+        this.user = user;
+        this.full_name = full_name;
+        this.created_by = created_by;
+        this.updated_by = updated_by;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.status = status;
     }
 }
