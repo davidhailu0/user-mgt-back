@@ -77,11 +77,20 @@ public class HajjController {
                     return responseBody;
                 }
             } else {
-                return "Response body is empty or null";
+
+                Map<String, Object> error = new HashMap<>();
+                error.put("message", "Response body is empty or null");
+                error.put("status", false);
+                return error;
+
+
             }
         } catch (HttpClientErrorException ex) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", ex.getMessage());
+            error.put("status", false);
+            return error;
             // Handle unauthorized error
-            return ex.getMessage();
         }
     }
     @GetMapping("/hajjList")
@@ -136,7 +145,11 @@ public class HajjController {
         }
 
         catch (HttpClientErrorException ex) {
-            return ex.getMessage();
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", ex.getMessage());
+            error.put("status", "failed");
+            return error;
+
 
         }
 
@@ -262,11 +275,25 @@ public class HajjController {
                 }
                 else
                 {
+
                    HUjjaj update_huj = updateTable(paymentcode,responseBody,user);
-                   Object resp = Post_to_hajserver(update_huj);
-                   update_huj.setPaid(true);
-                   hujjajRepo.save(update_huj);
-                   return resp;
+                    Map<String,Object>  resp = (Map<String, Object>) Post_to_hajserver(update_huj);
+                     boolean status = (boolean) resp.get("success");
+                     if(status == true  )
+                     {
+                         update_huj.setPaid(true);
+                         hujjajRepo.save(update_huj);
+                         Map<String, Object> error = new HashMap<>();
+                         error.put("message", "Transaction Authorized Sucessfuly");
+                         error.put("success", true);
+                         return error;
+                     }
+
+//                   return resp;
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("error", "Fund Transfer Done BUT SOMETHING HAPPEN PLEASE CONTACT ADMIN");
+                    error.put("success", false);
+                    return error;
                 }
             }
             else {
@@ -291,25 +318,26 @@ public class HajjController {
     public HUjjaj updateTable(String paymentCode,Map<String, Object> hujajRequest,Users checker){
         Optional<HUjjaj> updatedHujaj = hujjajRepo.findHUjjajByPaymentCode(paymentCode);
             HUjjaj hujjaj = updatedHujaj.get();
-            hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("FCCREF").toString());
-            hujjaj.setTrans_ref_no(hujajRequest.get("FCCREF").toString());
-            hujjaj.setAC_BRANCH(hujajRequest.get("ACCOUNT_BRANCH").toString());
-//            hujjaj.setBranch_name(hujajRequest.getBranch_name());
-//            hujjaj.setNARRATION(hujajRequest.getNARRATION());
-//            hujjaj.setCUST_NAME(hujajRequest.getCUST_NAME());
+            hujjaj.set_fundtransfered(true);
+//            hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("FCCREF").toString());
+            hujjaj.setTrans_ref_no(hujajRequest.get("TRANS_REF_NO").toString());
+            hujjaj.setAC_BRANCH(hujajRequest.get("AC_BRANCH").toString());
+            hujjaj.setNARRATION(hujajRequest.get("NARRATIVE").toString());
+            hujjaj.setCUST_NAME(hujajRequest.get("ACCOUNT_HOLDER").toString());
 //            hujjaj.setTRN_REF_NO(hujajRequest.getTRN_REF_NO());
-//            hujjaj.setAC_NO(hujajRequest.getAC_NO());
-//            hujjaj.setLCY_AMOUNT(hujajRequest.getLCY_AMOUNT());
-//            hujjaj.setRELATED_CUSTOMER(hujajRequest.getRELATED_CUSTOMER());
-//            hujjaj.setRELATED_ACCOUNT(hujajRequest.getRELATED_ACCOUNT());
-//            hujjaj.setTRN_DT(hujajRequest.getTRN_DT());
-//            hujjaj.setVALUE_DT(hujajRequest.getVALUE_DT());
-//            hujjaj.setAVLDAYS(hujajRequest.getAVLDAYS());
+            hujjaj.setAC_NO(hujajRequest.get("ACCOUNT_NUMBER").toString());
+            hujjaj.setLCY_AMOUNT(hujajRequest.get("LCY_AMOUNT").toString());
+            hujjaj.setRELATED_CUSTOMER(hujajRequest.get("RELATED_CUSTOMER").toString());
+            hujjaj.setRELATED_ACCOUNT(hujajRequest.get("RELATED_ACCOUNT").toString());
+            hujjaj.setTRN_DT(hujajRequest.get("TRN_DT").toString());
+            hujjaj.setVALUE_DT(hujajRequest.get("VALUE_DATE").toString());
             hujjaj.setAUTH_ID(userDetailRepo.findUserDetailByUser(checker).get().getFull_name());
             hujjaj.setSTMT_DT(hujajRequest.get("TRANSACTION_DATE").toString());
 //            hujjaj.setNODE(hujajRequest.getNODE());
-//            hujjaj.setAC_CCY(hujajRequest.getAC_CCY());
-            hujjaj.setAUTH_TIMESTAMP(LocalDateTime.now().toString());
+        //    hujjaj.setAVLDAYS(hujajRequest.getAVLDAYS());
+
+        hujjaj.setAC_CCY(hujajRequest.get("AC_CCY").toString());
+            hujjaj.setAUTH_TIMESTAMP(hujajRequest.get("AUTH_TIMESTAMP").toString());
             hujjaj.setChecker_Id(checker);
             hujjajRepo.save(hujjaj);
             return hujjaj;
