@@ -57,7 +57,8 @@ public class SecurityConfig {
                                         """
                         );
                     }
-                    else if(response.getStatus()==403){
+                    else{
+                        response.setStatus(401);
                         response.getWriter().write(
                                 """
                                        {

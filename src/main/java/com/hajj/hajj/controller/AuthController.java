@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -80,12 +82,13 @@ public class AuthController {
         return "redirect:/login";
     }
 
-    @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile")
     public Users getProfile(HttpServletRequest request){
         String token = request.getHeader("Authorization");
         String username = util.validateTokenAndRetrieveSubject(token.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
+        user.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_"+userRoleRepo.findByUser(user).get().getRole().getName().toUpperCase())));
         return user;
     }
 //    @RequestMapping(value="/dashboard")

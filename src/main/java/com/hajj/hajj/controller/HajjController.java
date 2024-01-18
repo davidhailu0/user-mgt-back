@@ -1,8 +1,7 @@
 package com.hajj.hajj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hajj.hajj.DTO.HujajRequest;
-import com.hajj.hajj.DTO.ResponseDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.Users;
@@ -12,21 +11,17 @@ import com.hajj.hajj.repository.UsersRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @CrossOrigin()
@@ -93,53 +88,67 @@ public class HajjController {
             // Handle unauthorized error
         }
     }
+
     @GetMapping("/hajjList")
     public List<HUjjaj> getAllList(){
         return hujjajRepo.findAll();
     }
 
-
     @GetMapping("/hajjList/paid")
-    public List<HUjjaj> getAllPaid(){
-        return hujjajRepo.findHUjjajByPaidStatus(true);
+    public List<HUjjaj> getAllPaid(HttpServletRequest request){
+        String jwtToken = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+        return hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName());
     }
 
     @GetMapping("/hajjList/unpaid")
-    public List<HUjjaj> getAllUnpaid(){
-        return hujjajRepo.findHUjjajByPaidStatus(false);
+    public List<HUjjaj> getAllUnpaid(HttpServletRequest request){
+        String jwtToken = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+        return hujjajRepo.findHUjjajByPaidStatus(false,user.getBranch().getName());
     }
+
     @GetMapping("/payment_code/{payment_code}")
-    public Object getHajjByPaymentCode(@PathVariable String payment_code, HttpServletResponse resp){
-        Optional<HUjjaj> check = hujjajRepo.findHUjjajByPaymentCode(payment_code);
+    public Object getHajjByPaymentCode(@PathVariable String payment_code, HttpServletResponse resp,HttpServletRequest request){
+        String jwtToken = request.getHeader("Authorization");
+        String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
+        Users user = usersRepo.findUsersByUsername(username).get();
+        Optional<HUjjaj> check = hujjajRepo.findHUjjajByPaymentCode(payment_code,user.getBranch().getName());
         if(check.isEmpty()){
             Map<String, Object> error = new HashMap<>();
-            error.put("message", "The Payment Code "+payment_code+" is does not exist");
+            error.put("message", "The Payment Code "+payment_code+" does not exist or You are from different branch");
             error.put("status", "failed");
             return error;
         }
-//        if(check.get().isPaid()){
+        if(check.get().isPaid()){
             Map<String, Object> success = new HashMap<>();
             success.put("status", "success");
             success.put("data", check.get());
             return success;
-//        }
-//        Map<String, Object> error = new HashMap<>();
-//        error.put("message", "No Payment has not been made");
-//        error.put("status", "failed");
-//        return error;
+        }
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", "No Payment has not been made");
+        error.put("status", "failed");
+        return error;
     }
+
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code) throws JsonProcessingException {
-        final String apiUrl = env.getProperty("hajjApi")+ payment_code;
-
+        final String apiUrl = env.getProperty("hajjApi");
+        Map<String, String> uriVariables = new HashMap<>();
+        uriVariables.put("payment_code", payment_code);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("x-Authorization", env.getProperty("x-auth"));
-        headers.add("x-Authorization-Secret", env.getProperty("x-secret"));
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        headers.set("x-Authorization", env.getProperty("x-auth"));
+        headers.set("x-Authorization-Secret", env.getProperty("x-secret"));
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
 
-            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, requestEntity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET,requestEntity,String.class,uriVariables);
             // Process the response
            return  Objects.requireNonNull(response.getBody());
         }
@@ -186,7 +195,7 @@ public class HajjController {
         if (amount <= amount_inAccount){
                 hujaj.setMaker_Id(user);
                 try {
-                    Optional<HUjjaj> fetchHujaj = hujjajRepo.findHUjjajByPaymentCode(hujaj.getPayment_code());
+                    Optional<HUjjaj> fetchHujaj = hujjajRepo.findHUjjajByPaymentCode(hujaj.getPayment_code(),user.getBranch().getName());
                     if(fetchHujaj.isEmpty())
                     {
                         hujjajRepo.save(hujaj);
@@ -229,10 +238,10 @@ public class HajjController {
         String  naration= hUjjaj.getNARRATION();
         String paymentcode=hUjjaj.getPayment_code();
 
-        Optional<HUjjaj> updatedHujaj = hujjajRepo.findHUjjajByPaymentCode(paymentcode);
+        Optional<HUjjaj> updatedHujaj = hujjajRepo.findHUjjajByPaymentCode(paymentcode,user.getBranch().getName());
         if(updatedHujaj.isEmpty()){
             Map<String, Object> error = new HashMap<>();
-            error.put("error", "There is no transaction created with "+paymentcode);
+            error.put("error", "There is no transaction made with "+paymentcode+" payment code");
             error.put("success", false);
             return error;
         }
@@ -361,6 +370,8 @@ public  Object Post_to_hajserver(HUjjaj hUjjaj)
       HttpHeaders headers =  new HttpHeaders();
     headers.add("x-Authorization", env.getProperty("x-auth"));
     headers.add("x-Authorization-Secret", env.getProperty("x-secret"));
+    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+    headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
     headers.setContentType(MediaType.APPLICATION_JSON);
     String jsonBody = "{ " +
             "\"payment_code\":" +"\""+ paymentcode + "\"" + ","+
