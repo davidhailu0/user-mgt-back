@@ -28,6 +28,7 @@ public class HUjjaj {
     String  payment_code;
     String amount;
     boolean paid ;
+    boolean is_fundtransfered;
     String account_number;
     String account_holder;
     String trans_ref_no;
@@ -68,7 +69,7 @@ public class HUjjaj {
     public HUjjaj(){
 
     }
- public HUjjaj(String first_name, String last_name, String middle_name, String phone, String photo_url, String passport_number, String birth_date, String service_package, String payment_code, String amount, boolean paid, String account_number, String account_holder, String trans_ref_no, String amount_inaccount, String EXTERNAL_REF_NO, String TRN_CODE, String AC_BRANCH, String branch_name, String NARRATION, String CUST_NAME, String TRN_REF_NO, String AC_NO, String LCY_AMOUNT, String RELATED_CUSTOMER, String RELATED_ACCOUNT, String TRN_DT, String VALUE_DT, String USERID, String AVLDAYS, String AUTH_ID, String STMT_DT, String NODE, String AC_CCY, String AUTH_TIMESTAMP, Users maker_Id, Users checker_Id) {
+ public HUjjaj(String first_name, String last_name, String middle_name, String phone, String photo_url, String passport_number, String birth_date, String service_package, String payment_code, String amount, boolean paid, boolean is_fundtransfered,String account_number, String account_holder, String trans_ref_no, String amount_inaccount, String EXTERNAL_REF_NO, String TRN_CODE, String AC_BRANCH, String branch_name, String NARRATION, String CUST_NAME, String TRN_REF_NO, String AC_NO, String LCY_AMOUNT, String RELATED_CUSTOMER, String RELATED_ACCOUNT, String TRN_DT, String VALUE_DT, String USERID, String AVLDAYS, String AUTH_ID, String STMT_DT, String NODE, String AC_CCY, String AUTH_TIMESTAMP, Users maker_Id, Users checker_Id) {
   this.first_name = first_name;
   this.last_name = last_name;
   this.middle_name = middle_name;
@@ -80,6 +81,7 @@ public class HUjjaj {
   this.payment_code = payment_code;
   this.amount = amount;
   this.paid = paid;
+  this.is_fundtransfered=is_fundtransfered;
   this.account_number = account_number;
   this.account_holder = account_holder;
   this.trans_ref_no = trans_ref_no;

@@ -17,6 +17,7 @@ public class HujajRequest {
     String  payment_code;
     String amount;
     boolean paid ;
+    boolean is_fundtransfered;
     String account_number;
     String account_holder;
     String trans_ref_no;
