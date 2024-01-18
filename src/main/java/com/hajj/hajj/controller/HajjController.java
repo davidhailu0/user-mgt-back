@@ -285,10 +285,11 @@ public class HajjController {
                 else
                 {
 
-                   HUjjaj update_huj = updateTable(paymentcode,responseBody,user);
+                   HUjjaj update_huj = updateTable(paymentcode,updatedHujaj.get(),responseBody,user);
                     Map<String,Object>  resp = (Map<String, Object>) Post_to_hajserver(update_huj);
                      boolean status = (boolean) resp.get("success");
-                     if(status == true  )
+                    System.out.println(resp);
+                     if(status)
                      {
                          update_huj.setPaid(true);
                          hujjajRepo.save(update_huj);
@@ -324,16 +325,14 @@ public class HajjController {
 
     }
 
-    public HUjjaj updateTable(String paymentCode,Map<String, Object> hujajRequest,Users checker){
-        Optional<HUjjaj> updatedHujaj = hujjajRepo.findHUjjajByPaymentCode(paymentCode);
-            HUjjaj hujjaj = updatedHujaj.get();
+    public HUjjaj updateTable(String paymentCode,HUjjaj hujjaj,Map<String, Object> hujajRequest,Users checker){
+
             hujjaj.set_fundtransfered(true);
 //            hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("FCCREF").toString());
             hujjaj.setTrans_ref_no(hujajRequest.get("TRANS_REF_NO").toString());
             hujjaj.setAC_BRANCH(hujajRequest.get("AC_BRANCH").toString());
             hujjaj.setNARRATION(hujajRequest.get("NARRATIVE").toString());
             hujjaj.setCUST_NAME(hujajRequest.get("ACCOUNT_HOLDER").toString());
-//            hujjaj.setTRN_REF_NO(hujajRequest.getTRN_REF_NO());
             hujjaj.setAC_NO(hujajRequest.get("ACCOUNT_NUMBER").toString());
             hujjaj.setLCY_AMOUNT(hujajRequest.get("LCY_AMOUNT").toString());
             hujjaj.setRELATED_CUSTOMER(hujajRequest.get("RELATED_CUSTOMER").toString());
@@ -373,17 +372,18 @@ public  Object Post_to_hajserver(HUjjaj hUjjaj)
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
     headers.setContentType(MediaType.APPLICATION_JSON);
-    String jsonBody = "{ " +
-            "\"payment_code\":" +"\""+ paymentcode + "\"" + ","+
-            "\"paid\":" +"\""+ true + "\"" + ","+
-            "\"bank_code\": " +"\""+ bank_code + "\"" + ","+
-            "\"account_number\": " +"\""+ account_number + "\"" + ","+
-            "\"account_holder\":" +"\""+ account_holder + "\"" + ","+
-            "\"refrence_number\":" +"\""+ true + "\"" + ","+
-            "\"date\": " +"\""+ date + "\"" + ","+
-            "\"amount\": " +"\""+ amount + "\"" +
-
-            "}";
+    String jsonBody = String.format("""
+            {\s
+            "payment_code":"%s",
+            "paid":true,
+            "bank_code": "%s",
+            "account_number": "%s",
+            "account_holder":"%s",
+            "refrence_number":"%s", 
+            "date: "%s",
+            "amount: "%s" 
+            }
+            """,paymentcode,bank_code,account_number,account_holder,refrence_number,date,amount);
 
     HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody,headers);
     try {

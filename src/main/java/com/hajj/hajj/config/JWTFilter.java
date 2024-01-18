@@ -57,12 +57,6 @@ public class JWTFilter extends OncePerRequestFilter{
                     }
                 }catch(JWTVerificationException exc){response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("""
-                        {
-                            "success":false,
-                            "error:"You are not authorize"
-                        }
-                        """);
                 }
             }
         }
