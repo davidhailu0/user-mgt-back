@@ -37,4 +37,14 @@ public class Branch{
     public Branch(){
 
     }
+
+    public Branch(String branch_code, String name, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
+        this.branch_code = branch_code;
+        this.name = name;
+        this.created_by = created_by;
+        this.updated_by = updated_by;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.status = status;
+    }
 }

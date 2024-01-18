@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,12 @@ public class BranchService {
     public Optional<Branch> getBranchById(Long id){
         return Optional.ofNullable(branchRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Branch not found.")));
     }
+
+//    @PostConstruct
+//    void addBranch(){
+//        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
+//        branchRepo.save(new Branch("315000","Alif Branch",null,null,time,time,"Active"));
+//    }
 
     public Branch saveBranch(BranchRequest branchInfo){
         Branch newBranch = new Branch();
