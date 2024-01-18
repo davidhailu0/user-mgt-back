@@ -301,7 +301,7 @@ public class HajjController {
 
 //                   return resp;
                     Map<String, Object> error = new HashMap<>();
-                    error.put("error", "Fund Transfer Done BUT SOMETHING HAPPEN PLEASE CONTACT ADMIN");
+                    error.put("error", "Fund Transfer Done BUT SOMETHING HAPPEN PLEASE CONTACT ADMIN"+ resp);
                     error.put("success", false);
                     return error;
                 }
@@ -328,8 +328,8 @@ public class HajjController {
     public HUjjaj updateTable(String paymentCode,HUjjaj hujjaj,Map<String, Object> hujajRequest,Users checker){
 
             hujjaj.set_fundtransfered(true);
-//            hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("FCCREF").toString());
-            hujjaj.setTrans_ref_no(hujajRequest.get("TRANS_REF_NO").toString());
+            hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("TRANS_REF_NO").toString());
+            hujjaj.setTrans_ref_no(hujajRequest.get("FCCREF").toString());
             hujjaj.setAC_BRANCH(hujajRequest.get("AC_BRANCH").toString());
             hujjaj.setNARRATION(hujajRequest.get("NARRATIVE").toString());
             hujjaj.setCUST_NAME(hujajRequest.get("ACCOUNT_HOLDER").toString());
@@ -380,8 +380,8 @@ public  Object Post_to_hajserver(HUjjaj hUjjaj)
             "account_number": "%s",
             "account_holder":"%s",
             "refrence_number":"%s", 
-            "date: "%s",
-            "amount: "%s" 
+            "date": "%s",
+            "amount": %s 
             }
             """,paymentcode,bank_code,account_number,account_holder,refrence_number,date,amount);
 
