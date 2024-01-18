@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +19,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Component
@@ -52,15 +55,13 @@ public class JWTFilter extends OncePerRequestFilter{
                     if(SecurityContextHolder.getContext().getAuthentication() == null){
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
-                }catch(JWTVerificationException exc){
-                    handlerExceptionResolver.resolveException(request, response, null, exc);
-                    response.setContentType("application/json");
+                }catch(JWTVerificationException exc){response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("""
-                    {
-                        "status":"failed",
-                        "message":"Unauthorized"
-                    }
+                        {
+                            "success":false,
+                            "error:"You are not authorize"
+                        }
                         """);
                 }
             }
