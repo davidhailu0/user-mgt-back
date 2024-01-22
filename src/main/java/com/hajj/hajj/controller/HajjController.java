@@ -8,6 +8,7 @@ import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UserDetailRepo;
+import com.hajj.hajj.repository.UserRoleRepo;
 import com.hajj.hajj.repository.UsersRepo;
 import com.hajj.hajj.service.LoggerService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @CrossOrigin()
@@ -46,6 +48,9 @@ public class HajjController {
 
     @Autowired
     LoggerService loggerService;
+
+    @Autowired
+    UserRoleRepo userRoleRepo;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -112,7 +117,11 @@ public class HajjController {
     public List<HUjjaj> getAllPaid(HttpServletRequest request){
         Users user = getUser(request);
         loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName())));
-        return hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName());
+        List<HUjjaj> paidList = hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName());
+        if(userRoleRepo.findByUser(user).get().getRole().getName().toLowerCase().contains("maker")){
+            return paidList.stream().filter(hj->hj.getMaker_Id().getId()==user.getId()).collect(Collectors.toList());
+        }
+        return paidList;
     }
 
     @GetMapping("/hajjList/unpaid")
