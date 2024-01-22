@@ -52,7 +52,10 @@ public class UserService {
     }
 
     public Optional<Users> getUserById(@NonNull Long id){
-        return Optional.ofNullable(userRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")));
+        if(!userRepo.existsById(id)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        return userRepo.findById(id);
     }
 
     public Users saveUser(@NonNull UsersRequest userInfo){

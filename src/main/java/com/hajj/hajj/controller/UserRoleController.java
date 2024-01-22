@@ -27,8 +27,8 @@ public class UserRoleController {
     }
 
     @GetMapping("/{id}")
-    public Optional<UserRole> getUserRoleById(@PathVariable Long id){
-        return userRoleService.getUserRoleById(id);
+    public UserRole getUserRoleById(@PathVariable Long id){
+        return userRoleService.getUserRoleById(id).get();
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -37,7 +37,7 @@ public class UserRoleController {
     }
 
     @PutMapping("/{id}")
-    public Optional<UserRole> updateUserRole(@RequestBody UserRoleRequest userRole,@PathVariable Long id){
-        return userRoleService.updateUserRole(id,userRole);
+    public UserRole updateUserRole(@RequestBody UserRoleRequest userRole,@PathVariable Long id){
+        return userRoleService.updateUserRole(id,userRole).get();
     }
 }

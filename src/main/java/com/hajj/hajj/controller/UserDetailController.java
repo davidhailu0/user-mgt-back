@@ -26,8 +26,8 @@ public class UserDetailController {
     }
 
     @GetMapping("/{id}")
-    public Optional<UserDetail> getUserDetailById(@PathVariable Long id){
-        return userDetailService.getUserDetailById(id);
+    public UserDetail getUserDetailById(@PathVariable Long id){
+        return userDetailService.getUserDetailById(id).get();
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -36,7 +36,7 @@ public class UserDetailController {
     }
 
     @PutMapping("/{id}")
-    public Optional<UserDetail> updateUserDetail(@RequestBody UserDetailRequest userDetail,@PathVariable Long id){
-        return userDetailService.updateUserDetail(id,userDetail);
+    public UserDetail updateUserDetail(@RequestBody UserDetailRequest userDetail,@PathVariable Long id){
+        return userDetailService.updateUserDetail(id,userDetail).get();
     }
 }

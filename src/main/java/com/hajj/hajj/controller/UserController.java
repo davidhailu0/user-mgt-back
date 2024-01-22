@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.hajj.hajj.DTO.UsersRequest;
@@ -29,8 +28,8 @@ public class UserController {
 
     @GetMapping("/{id}")
     
-    public Optional<Users> getUserById(@PathVariable Long id){
-        return userService.getUserById(id);
+    public Users getUserById(@PathVariable Long id){
+        return userService.getUserById(id).get();
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -39,7 +38,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public Optional<Users> updateUserInfo(@RequestBody UsersRequest user,@PathVariable Long id){
-        return userService.updateUser(id,user);
+    public Users updateUserInfo(@RequestBody UsersRequest user,@PathVariable Long id){
+        return userService.updateUser(id,user).get();
     }
 }
