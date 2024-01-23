@@ -57,6 +57,23 @@ public class HajjController {
 
     Gson gson = new Gson();
 
+
+    @GetMapping("/getHajjData")
+    public Object getHajjData(HttpServletRequest request){
+        Users user = getUser(request);
+        List<HUjjaj> hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
+        int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
+        int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
+        int total = hujajData.size();
+        Map<String,Integer> hajjData = new HashMap<>();
+        hajjData.put("total",total);
+        hajjData.put("unpaid",unpaid);
+        hajjData.put("paid",paid);
+        hajjData.put("mobile",0);
+        loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
+        return hajjData;
+    }
+
     @GetMapping("/get_nameQuery/{account_number}")
     public  Object get_nameQuery(@PathVariable String account_number,HttpServletRequest request) {
 

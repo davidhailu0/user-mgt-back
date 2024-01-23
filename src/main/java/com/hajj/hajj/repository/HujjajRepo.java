@@ -16,4 +16,6 @@ public interface HujjajRepo extends JpaRepository<HUjjaj, Long> {
     @Query(value = "SELECT h from HUjjaj h where h.paid = :status and h.branch_name = :branch_name")
     List<HUjjaj> findHUjjajByPaidStatus(@Param("status") boolean status,@Param("branch_name") String branchName);
 
+    @Query(value = "SELECT h from HUjjaj h where h.branch_name = :branch_name")
+    List<HUjjaj> getDashboardData(@Param("branch_name") String branchName);
 }

@@ -50,7 +50,7 @@ public class JWTFilter extends OncePerRequestFilter{
                 }
             }
         }
-        else if(authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer ")){
+        else if(!request.getRequestURI().contains("auth/login")&&(authHeader == null || authHeader.isBlank() || !authHeader.startsWith("Bearer "))){
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
         filterChain.doFilter(request, response);
