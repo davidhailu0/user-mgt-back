@@ -1,5 +1,6 @@
 package com.hajj.hajj.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hajj.hajj.model.UserRole;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UserRoleRepo;
@@ -62,5 +63,10 @@ public class ApplicationConfiguration {
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;
+    }
+
+    @Bean
+    ObjectMapper getObjectMapper(){
+        return new ObjectMapper();
     }
 }
