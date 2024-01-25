@@ -2,6 +2,7 @@ package com.hajj.hajj.model;
 
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,9 +32,11 @@ public class UserRole{
     Users user;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "assigned_by_id",referencedColumnName = "id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     Users assigned_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;

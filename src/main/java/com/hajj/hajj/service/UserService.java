@@ -62,19 +62,26 @@ public class UserService {
         Date date = Date.valueOf(now.toLocalDate());
         newUser.setCreated_at(Timestamp.valueOf(now));
         newUser.setUpdated_at(Timestamp.valueOf(now));
+        if(created_by.isPresent()){
+            newUser.setCreated_by(created_by.get());
+            newUser.setUpdated_by(created_by.get());
+        }
+        newUser = userRepo.saveAndFlush(newUser);
         UserDetail newUserDetail = new UserDetail();
+        newUserDetail.setCreated_at(Timestamp.valueOf(now));
+        newUserDetail.setUpdated_at(Timestamp.valueOf(now));
+        newUserDetail.setStatus(userInfo.getStatus());
         newUserDetail.setFull_name(userInfo.getFullname());
         newUserDetail.setUser(newUser);
         newUserDetail.setStart_date(date);
         newUserDetail.setStatus_changed_on(date);
         if(created_by.isPresent()){
-            newUser.setCreated_by(created_by.get());
-            newUser.setUpdated_by(created_by.get());
             newUserDetail.setCreated_by(created_by.get());
             newUserDetail.setUpdated_by(created_by.get());
+
         }
         userDetailRepo.save(newUserDetail);
-        return userRepo.save(newUser);
+        return newUser;
     }
 
     public Optional<Users> updateUser(Long id,UsersRequest updatedUser){

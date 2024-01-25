@@ -36,9 +36,11 @@ public class Users implements UserDetails{
     Branch branch;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
+    @JsonProperty(access = Access.WRITE_ONLY)
     Users created_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
+    @JsonProperty(access = Access.WRITE_ONLY)
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;
