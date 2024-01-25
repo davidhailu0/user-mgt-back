@@ -1,15 +1,10 @@
 package com.hajj.hajj.model;
 
 import java.sql.Timestamp;
+import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +25,9 @@ public class Permission{
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
     Users updated_by;
     Timestamp created_at;
+    @ManyToMany(mappedBy = "permissionList")
+    @JsonIgnore
+    List<Role> roleList;
     Timestamp updated_at;
     String status;
 

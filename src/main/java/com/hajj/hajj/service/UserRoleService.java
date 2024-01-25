@@ -34,8 +34,9 @@ public class UserRoleService {
 //    @PostConstruct
 //    void addRoleToUsers(){
 //        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
-//        userRoleRepo.save(new UserRole(roleRepo.findById(1L).get(),usersRepo.findById(1L).get(),null,null,time,time,"Active"));
-//        userRoleRepo.save(new UserRole(roleRepo.findById(2L).get(),usersRepo.findById(2L).get(),null,null,time,time,"Active"));
+//        //userRoleRepo.save(new UserRole(roleRepo.findById(1L).get(),usersRepo.findById(1L).get(),null,null,time,time,"Active"));
+//        //userRoleRepo.save(new UserRole(roleRepo.findById(2L).get(),usersRepo.findById(2L).get(),null,null,time,time,"Active"));
+//        //userRoleRepo.save(new UserRole(roleRepo.findById(19L).get(),usersRepo.findById(3L).get(),null,null,time,time,"Active"));
 //    }
 
     public List<UserRole> getAllUserRole(){
@@ -70,9 +71,7 @@ public class UserRoleService {
         }
         UserRole updatedUserRole = userRoleRepo.findById(id).get();
         Optional<Role> assignedRole = roleRepo.findById(userRole.getRole());
-        if(assignedRole.isPresent()){
-            updatedUserRole.setRole(assignedRole.get());
-        }
+        assignedRole.ifPresent(updatedUserRole::setRole);
         Optional<Users> assignedByUser = usersRepo.findById(userRole.getUpdated_by());
         if(assignedRole.isPresent()){
             updatedUserRole.setUpdated_by(assignedByUser.get());
@@ -80,9 +79,7 @@ public class UserRoleService {
         updatedUserRole.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         updatedUserRole.setStatus(userRole.getStatus());
         Optional<Users> user = usersRepo.findById(userRole.getUser());
-        if(user.isPresent()){
-            updatedUserRole.setUser(user.get());
-        }
+        user.ifPresent(updatedUserRole::setUser);
         return Optional.of(userRoleRepo.save(updatedUserRole));
     }
 }

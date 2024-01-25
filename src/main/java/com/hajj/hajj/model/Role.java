@@ -1,15 +1,10 @@
 package com.hajj.hajj.model;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +26,9 @@ public class Role{
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
     Users updated_by;
+    @ManyToMany
+    @JoinTable(name = "role_permission",joinColumns = @JoinColumn(name = "role_id"),inverseJoinColumns = @JoinColumn(name="permission_id"))
+    List<Permission> permissionList = new ArrayList<>();
     Timestamp created_at;
     Timestamp updated_at;
 
@@ -38,13 +36,14 @@ public class Role{
 
     }
 
-    public Role(String name, String description, String status, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at) {
+    public Role(String name, String description, String status, Users created_by, Users updated_by, List<Permission> permissionList,Timestamp created_at, Timestamp updated_at) {
         this.name = name;
         this.description = description;
         this.status = status;
         this.created_by = created_by;
         this.updated_by = updated_by;
         this.created_at = created_at;
+        this.permissionList.addAll(permissionList);
         this.updated_at = updated_at;
     }
 }
