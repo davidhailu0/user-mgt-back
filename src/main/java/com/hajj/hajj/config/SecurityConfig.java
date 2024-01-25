@@ -117,17 +117,18 @@ public class SecurityConfig {
                     }
                     
                     else{
+                        response.setStatus(400);
                         loggerService.createNewLog(getUser(request).isPresent()?getUser(request).get():null, request.getRequestURI(), """
                             {
                              "success":false,
-                             "error":"You are trying to access a method or resource which is not available"
+                             "error":"Please Check Your URL or Request Body"
                             }
                              """);
                         response.getWriter().write(
                                 """
                                        {
                                         "success":false,
-                                        "error":"You are trying to access a method or resource which is not available"
+                                        "error":"Please Check Your URL or Request Body"
                                        }
                                         """
                         );
