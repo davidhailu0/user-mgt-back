@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.hajj.hajj.repository.PermissionRepo;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,15 @@ public class RoleService {
     @Autowired
     UsersRepo userRepo;
 
+    @Autowired
+    PermissionRepo permissionRepo;
+
 //    @PostConstruct
 //    void addRoles(){
 //        Timestamp time = Timestamp.valueOf(LocalDateTime.now());
-//        roleRepo.save(new Role("maker","This User create the transaction request","Active",null,null,time,time));
-//        roleRepo.save(new Role("checker","This User authorizes the transaction","Active",null,null,time,time));
+//        roleRepo.save(new Role("maker","has maker and checker access","Active",null,null,List.of(permissionRepo.findById(1L).get(),permissionRepo.findById(2L).get()),time,time));
+//        roleRepo.save(new Role("checker","has maker and checker access","Active",null,null,List.of(permissionRepo.findById(2L).get()),time,time));
+//        roleRepo.save(new Role("superadmin","has maker and checker access","Active",null,null,List.of(permissionRepo.findById(1L).get(),permissionRepo.findById(2L).get()),time,time));
 //    }
 
     public List<Role> getAllRoles(){

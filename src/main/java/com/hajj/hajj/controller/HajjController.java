@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
+import com.hajj.hajj.model.UserRole;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UserDetailRepo;
@@ -206,7 +207,18 @@ public class HajjController {
 
     }
 
-    @PreAuthorize("hasRole('maker')")
+
+    @GetMapping("/hajjListByBranch")
+    public List<HUjjaj> getMakerSpecificList(HttpServletRequest request){
+        Users user = getUser(request);
+        UserRole userRole = userRoleRepo.findByUser(user).orElse(null);
+        if(userRole.getRole().getName().equals("maker")){
+            return hujjajRepo.getMadeHujjajList(user,user.getBranch().getName());
+        }
+        return hujjajRepo.getCheckedHujjajList(user,user.getBranch().getName());
+    }
+
+    @PreAuthorize("hasAnyRole('maker','superadmin')")
     @PostMapping("/make_hajj_trans")
     public Object make_hujaj_transaction(@RequestBody HUjjaj hujaj,HttpServletRequest request)
 
@@ -263,7 +275,49 @@ public class HajjController {
         return error;
     }
 
-    @PreAuthorize("hasRole('checker')")
+    @GetMapping("/unauthorizedTransactions")
+    public List<HUjjaj> getUnauthorizedTransactions(HttpServletRequest request){
+        Users user = getUser(request);
+        return hujjajRepo.getUnauthorizedTransactions(user.getBranch().getName());
+    }
+
+    @PreAuthorize("hasRole('superadmin')")
+    @GetMapping("/authorizeRequest/{paymentCode}")
+    public Object authorizeRequest(HttpServletRequest request,@PathVariable String paymentCode){
+        Users user = getUser(request);
+        Optional<HUjjaj> unauthorizedRequest = hujjajRepo.findHUjjajByPaymentCode(paymentCode,user.getBranch().getName());
+        if(unauthorizedRequest.isEmpty()){
+            Map<String,Object> error= new HashMap<String,Object>();
+            error.put("success",false);
+            error.put("error",String.format("The Payment Code %s is not registered",paymentCode));
+            return error;
+        }
+        if (unauthorizedRequest.get().isPaid()) {
+            Map<String,Object> error= new HashMap<String,Object>();
+            error.put("success",false);
+            error.put("error","The Payment Code has already been used");
+            return error;
+        }
+        HUjjaj update_huj = unauthorizedRequest.get();
+        Map<String,Object>  resp = (Map<String, Object>) Post_to_hajserver(update_huj);
+        boolean status = (boolean) resp.get("success");
+        if(status)
+        {
+            update_huj.setPaid(true);
+            hujjajRepo.save(update_huj);
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Transaction Authorized Successfully");
+            error.put("success", true);
+            loggerService.createNewLog(user,request.getRequestURI(),error.toString());
+            return error;
+        }
+        Map<String,Object> error= new HashMap<String,Object>();
+        error.put("success",false);
+        error.put("error",resp.get("error"));
+        return error;
+    }
+
+    @PreAuthorize("hasAnyRole('checker','superadmin')")
     @PostMapping("/Check_hajj_trans")
     public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj, HttpServletRequest request)
     {

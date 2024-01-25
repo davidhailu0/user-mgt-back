@@ -1,37 +1,29 @@
 package com.hajj.hajj.service;
 
+import com.hajj.hajj.DTO.UsersRequest;
+import com.hajj.hajj.model.Branch;
+import com.hajj.hajj.model.UserDetail;
+import com.hajj.hajj.model.Users;
+import com.hajj.hajj.repository.BranchRepo;
+import com.hajj.hajj.repository.UserDetailRepo;
+import com.hajj.hajj.repository.UsersRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.hajj.hajj.model.UserDetail;
-import com.hajj.hajj.repository.UserDetailRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.lang.NonNull;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import org.springframework.web.server.ResponseStatusException;
-
-import com.hajj.hajj.DTO.UsersRequest;
-import com.hajj.hajj.model.Branch;
-import com.hajj.hajj.model.Users;
-import com.hajj.hajj.repository.BranchRepo;
-import com.hajj.hajj.repository.UserRoleRepo;
-import com.hajj.hajj.repository.UsersRepo;
-
-import jakarta.annotation.PostConstruct;
-
 @Service
 public class UserService {
     @Autowired
     UsersRepo userRepo;
-
-    @Autowired
-    UserRoleRepo userRoleRepo;
 
     @Autowired
     UserDetailRepo userDetailRepo;
@@ -44,8 +36,7 @@ public class UserService {
 
 //     @PostConstruct
 //     void addUser(){
-//         userRepo.save(new Users("dawit","1234",passwordEncoder.encode("1234"),null,null,null,Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
-//         userRepo.save(new Users("abdi","1234",passwordEncoder.encode("1234"),null,null,null,Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
+//         userRepo.save(new Users("fedila","1234",passwordEncoder.encode("1234"),null,null,null,Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
 //     }
     public List<Users> getAllUsers(){
         return userRepo.findAll();
