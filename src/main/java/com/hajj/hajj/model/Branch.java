@@ -2,6 +2,7 @@ package com.hajj.hajj.model;
 
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,9 +27,11 @@ public class Branch{
     private String name;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
+    @JsonIgnore
     private Users created_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
+    @JsonIgnore
     private Users updated_by;
     private Timestamp created_at;
     private Timestamp updated_at;

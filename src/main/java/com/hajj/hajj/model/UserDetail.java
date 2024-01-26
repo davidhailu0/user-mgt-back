@@ -3,6 +3,7 @@ package com.hajj.hajj.model;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -31,13 +32,16 @@ public class UserDetail{
     @JoinColumn(name="user_id",referencedColumnName = "id")
     Users user;
     @NotBlank String full_name;
+    String phoneNumber;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     Users created_by;
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;

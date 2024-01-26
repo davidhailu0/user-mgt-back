@@ -20,9 +20,11 @@ public class Permission{
     String name;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
+    @JsonIgnore
     Users created_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
+    @JsonIgnore
     Users updated_by;
     Timestamp created_at;
     @ManyToMany(mappedBy = "permissionList")
