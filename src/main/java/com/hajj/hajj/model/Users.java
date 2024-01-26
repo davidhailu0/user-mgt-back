@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,10 +38,12 @@ public class Users implements UserDetails{
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
     @JsonProperty(access = Access.WRITE_ONLY)
+    @JsonIgnore
     Users created_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
     @JsonProperty(access = Access.WRITE_ONLY)
+    @JsonIgnore
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;

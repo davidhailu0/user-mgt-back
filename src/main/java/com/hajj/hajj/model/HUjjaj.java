@@ -1,5 +1,6 @@
 package com.hajj.hajj.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -56,10 +57,12 @@ public class HUjjaj {
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Maker_Id",referencedColumnName = "id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     Users Maker_Id ;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Checker_Id",referencedColumnName = "id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     Users Checker_Id;
 
     Timestamp created_at;
