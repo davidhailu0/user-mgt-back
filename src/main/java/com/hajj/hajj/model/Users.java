@@ -28,13 +28,16 @@ public class Users implements UserDetails{
     Long id;
     @Column(unique = true)
     @NotBlank String username;
-    String salt;
     @NotBlank
     @JsonProperty(access = Access.WRITE_ONLY)
     String password;
+    String confirmPassword;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "branch_id",referencedColumnName = "id")
     Branch branch;
+    @ManyToOne
+    @JoinColumn(name = "role_id",referencedColumnName = "id")
+    Role role;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
     @JsonProperty(access = Access.WRITE_ONLY)
@@ -53,9 +56,8 @@ public class Users implements UserDetails{
 
     }
 
-    public Users(String username, String salt, String password, Branch branch, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
+    public Users(String username, String password, Branch branch, Users created_by, Users updated_by, Timestamp created_at, Timestamp updated_at, String status) {
         this.username = username;
-        this.salt = salt;
         this.password = password;
         this.branch = branch;
         this.created_by = created_by;

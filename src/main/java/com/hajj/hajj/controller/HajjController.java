@@ -3,6 +3,7 @@ package com.hajj.hajj.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.hajj.hajj.DTO.HajjQueryDTO;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
 import com.hajj.hajj.model.UserRole;
@@ -23,7 +24,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,12 +54,10 @@ public class HajjController {
     LoggerService loggerService;
 
     @Autowired
-    UserRoleRepo userRoleRepo;
-
-    @Autowired
     ObjectMapper objectMapper;
 
-    Gson gson = new Gson();
+    @Autowired
+    Gson gson;
 
 
     @GetMapping("/getHajjData")
@@ -73,6 +74,45 @@ public class HajjController {
         hajjData.put("mobile",0);
         loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
         return hajjData;
+    }
+
+    @GetMapping("/filteredHajjReport")
+    public List<HUjjaj> filteredData(HajjQueryDTO hajjQueryDTO){
+        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null){
+            return List.of();
+        }
+        List<HUjjaj> allHajj = hujjajRepo.findAll();
+        allHajj = allHajj.stream().filter((hj)->{
+            String pattern = "yyyy-MM-dd";
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            LocalDate trnDate = LocalDate.parse(hj.getTRN_DT(), formatter);
+            LocalDate fromDate = null;
+            LocalDate toDate = null;
+            if(hajjQueryDTO.getFromDate()!=null&&!hajjQueryDTO.getFromDate().equals("null")&& !hajjQueryDTO.getFromDate().isEmpty()){
+                fromDate = LocalDate.parse(hajjQueryDTO.getFromDate(), formatter);
+                if(trnDate.isBefore(fromDate)){
+                    return false;
+                }
+            }
+            if(hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
+                toDate = LocalDate.parse(hajjQueryDTO.getToDate(), formatter);
+                if(trnDate.isAfter(toDate)){
+                    return false;
+                }
+            }
+            if(hajjQueryDTO.getStatus().equals("paid")){
+                if(!hj.isPaid()){
+                    return false;
+                }
+            }
+            else if(hajjQueryDTO.getStatus().equals("unpaid")){
+                if(hj.isPaid()){
+                    return false;
+                }
+            }
+            return true;
+        }).toList();
+        return allHajj;
     }
 
     @GetMapping("/get_nameQuery/{account_number}")
@@ -136,8 +176,8 @@ public class HajjController {
         Users user = getUser(request);
         loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName())));
         List<HUjjaj> paidList = hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName());
-        if(userRoleRepo.findByUser(user).get().getRole().getName().toLowerCase().contains("maker")){
-            return paidList.stream().filter(hj->hj.getMaker_Id().getId()==user.getId()).collect(Collectors.toList());
+        if(user.getRole().getName().toLowerCase().contains("maker")){
+            return paidList.stream().filter(hj-> Objects.equals(hj.getMaker_Id().getId(), user.getId())).collect(Collectors.toList());
         }
         return paidList;
     }
@@ -164,13 +204,13 @@ public class HajjController {
             Map<String, Object> success = new HashMap<>();
             success.put("status", "success");
             success.put("data", check.get());
-            loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(success));
+            loggerService.createNewLog(user,request.getRequestURI(),success.toString());
             return success;
         }
         Map<String, Object> error = new HashMap<>();
-        error.put("message", "No Payment has not been made");
+        error.put("message", "Please Make Sure the User has Paid");
         error.put("status", "failed");
-        loggerService.createNewLog(user,request.getRequestURI(),error.toString());
+        //loggerService.createNewLog(user,request.getRequestURI(),error.toString());
         return error;
     }
 
@@ -211,11 +251,10 @@ public class HajjController {
     @GetMapping("/hajjListByBranch")
     public List<HUjjaj> getMakerSpecificList(HttpServletRequest request){
         Users user = getUser(request);
-        UserRole userRole = userRoleRepo.findByUser(user).orElse(null);
-        if(userRole.getRole().getName().equals("maker")){
+        if(user.getRole().getName().contains("maker")){
             return hujjajRepo.getMadeHujjajList(user,user.getBranch().getName());
         }
-        return hujjajRepo.getCheckedHujjajList(user,user.getBranch().getName());
+        return hujjajRepo.getCheckedHujjajList(user.getBranch().getName());
     }
 
     @PreAuthorize("hasAnyRole('maker','superadmin')")
@@ -337,7 +376,7 @@ public class HajjController {
             Map<String, Object> error = new HashMap<>();
             error.put("error", "There is no transaction made with "+paymentcode+" payment code");
             error.put("success", false);
-            loggerService.createNewLog(user,request.getRequestURI(),error.toString());
+            //loggerService.createNewLog(user,request.getRequestURI(),error.toString());
             return error;
         }
         else if(updatedHujaj.get().isPaid()||updatedHujaj.get().is_fundtransfered()){
@@ -389,7 +428,7 @@ public class HajjController {
                 else
                 {
 
-                   HUjjaj update_huj = updateTable(paymentcode,updatedHujaj.get(),responseBody,user);
+                   HUjjaj update_huj = updateTable(updatedHujaj.get(),responseBody,user);
                     Map<String,Object>  resp = (Map<String, Object>) Post_to_hajserver(update_huj);
                      boolean status = (boolean) resp.get("success");
                      if(status)
@@ -432,7 +471,7 @@ public class HajjController {
 
     }
 
-    public HUjjaj updateTable(String paymentCode,HUjjaj hujjaj,Map<String, Object> hujajRequest,Users checker){
+    public HUjjaj updateTable(HUjjaj hujjaj, Map<String, Object> hujajRequest, Users checker){
 
             hujjaj.set_fundtransfered(true);
             hujjaj.setEXTERNAL_REF_NO(hujajRequest.get("TRANS_REF_NO").toString());

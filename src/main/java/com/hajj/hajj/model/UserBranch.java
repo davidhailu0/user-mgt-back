@@ -25,10 +25,10 @@ public class UserBranch {
     // @SequenceGenerator(sequenceName = "userrole_seq", allocationSize = 1, name = "userrole_seq")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="branch_id",referencedColumnName = "id")
     Branch branch;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name="user_id",referencedColumnName = "id")
     Users user;
     @ManyToOne(cascade = CascadeType.REMOVE)
@@ -43,7 +43,6 @@ public class UserBranch {
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;
-    String status;
 
     public UserBranch(){
 

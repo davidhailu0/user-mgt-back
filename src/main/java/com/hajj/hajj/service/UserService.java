@@ -1,5 +1,6 @@
 package com.hajj.hajj.service;
 
+import com.hajj.hajj.DTO.ResetPasswordDTO;
 import com.hajj.hajj.DTO.UserRoleRequest;
 import com.hajj.hajj.DTO.UsersRequest;
 import com.hajj.hajj.model.*;
@@ -11,20 +12,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.SecureRandom;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class UserService {
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+
+    final static int PASSWORDLENGTH = 5;
     @Autowired
     UsersRepo userRepo;
 
+
     @Autowired
     UserDetailRepo userDetailRepo;
+
+    @Autowired
+    MessageService messageService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -38,12 +47,15 @@ public class UserService {
     @Autowired
     RoleRepo roleRepo;
 
+    @Autowired
+    UserBranchRepo userBranchRepo;
+
 //     @PostConstruct
 //     void addUser(){
 //         userRepo.save(new Users("fedila","1234",passwordEncoder.encode("1234"),null,null,null,Timestamp.valueOf(LocalDateTime.now()),Timestamp.valueOf(LocalDateTime.now()),"Active"));
 //     }
-    public List<Users> getAllUsers(){
-        return userRepo.findAll();
+    public List<UserDetail> getAllUsers(){
+        return userDetailRepo.findAll();
     }
 
     public Optional<Users> getUserById(@NonNull Long id){
@@ -53,26 +65,60 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public Users saveUser(@NonNull UsersRequest userInfo,Users admin){
+    public List<UserDetail> getUsersByBranch(String branchName){
+        return userDetailRepo.findUsersByBranch(branchName);
+    }
+
+    public Object saveUser(@NonNull UsersRequest userInfo,Users admin){
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
+        Users checkUser = userRepo.findUsersByUsername(userInfo.getUsername()).orElse(null);
+        UserDetail checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(userInfo.getPhoneNumber()).orElse(null);
+        if(checkUser!=null){
+            Map<String,Object> error = new HashMap<>();
+            error.put("status",false);
+            error.put("error","This username have been taken");
+            return error;
+        }
+        if(checkUserDetail!=null){
+            Map<String,Object> error = new HashMap<>();
+            error.put("status",false);
+            error.put("error","This phone number is used");
+            return error;
+        }
         userBranch.ifPresent(newUser::setBranch);
         newUser.setUsername(userInfo.getUsername());
-        newUser.setPassword(passwordEncoder.encode(userInfo.getPassword()));
-        newUser.setSalt(userInfo.getSalt());
+        newUser.setPassword(passwordEncoder.encode("1234"));
         newUser.setStatus(userInfo.getStatus());
-        Optional<Users> created_by = userRepo.findById(userInfo.getCreated_by());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
         newUser.setUpdated_at(Timestamp.valueOf(now));
-        if(created_by.isPresent()){
-            newUser.setCreated_by(created_by.get());
-            newUser.setUpdated_by(created_by.get());
-        }
+        newUser.setCreated_by(admin);
+        newUser.setUpdated_by(admin);
+        newUser.setRole(roleRepo.findById(userInfo.getRole()).get());
+        newUser.setStatus("Active");
         newUser = userRepo.saveAndFlush(newUser);
-        saveUserDetail(userInfo,newUser,admin);
+        UserDetail userDetail = saveUserDetail(userInfo,newUser,admin);
         saveUserRole(userInfo.getRole(),newUser,admin);
+        createUserBranch(userInfo,newUser,admin,now);
+        generateDefaultPassword(newUser,userDetail);
         return newUser;
+    }
+
+    public Object changePassword(Users admin,ResetPasswordDTO resetPasswordDTO){
+        if(passwordEncoder.matches(resetPasswordDTO.getPreviousPassword(),admin.getPassword())){
+            admin.setPassword(passwordEncoder.encode(resetPasswordDTO.getNewPassword()));
+            admin.setConfirmPassword("");
+            userRepo.save(admin);
+            Map<String,Object> success = new HashMap<>();
+            success.put("success",true);
+            success.put("message","Successfully Changed Password");
+            return success;
+        }
+        Map<String,Object> error = new HashMap<>();
+        error.put("success",false);
+        error.put("message","Make sure the previous password is entered correctly or Ask for Password Reset");
+        return error;
     }
 
     public boolean resetPassword(String username){
@@ -80,33 +126,78 @@ public class UserService {
         if(user==null){
             return false;
         }
-        int randomNumber = ThreadLocalRandom.current().nextInt(1000, 100000 + 1);
-        user.setPassword(user.getUsername().substring(0,2)+randomNumber);
-        userRepo.save(user);
+        UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
+        generateDefaultPassword(user,userDetail);
         return true;
     }
 
-    public Optional<Users> updateUser(Long id,UsersRequest updatedUser){
-        if(!userRepo.existsById(id)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User With ID of "+id.toString()+" Not Found");
-        }
-        Users updateUser = userRepo.findById(id).get();
-        if(!updateUser.getPassword().equals(updatedUser.getPassword())){
-            updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        }
-        Optional<Branch> userBranch = branchRepo.findById(updatedUser.getBranch());
-        userBranch.ifPresent(updateUser::setBranch);
-        updateUser.setUsername(updatedUser.getUsername());
-        updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        updateUser.setSalt(updatedUser.getSalt());
-        updateUser.setStatus(updatedUser.getStatus());
-        Optional<Users> updated_by = userRepo.findById(updatedUser.getUpdated_by());
-        updated_by.ifPresent(updateUser::setUpdated_by);
-        updateUser.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-        return Optional.of(userRepo.save(updateUser));
+    private void generateDefaultPassword(Users user,UserDetail userDetail){
+        String rawPassword = generateRandomString();
+//        String rawPassword = "1234";
+        String password = passwordEncoder.encode(rawPassword);
+        user.setPassword(password);
+        user.setConfirmPassword(password);
+        messageService.saveMessage(userDetail.getPhoneNumber(),rawPassword);
+        userRepo.save(user);
     }
 
-    private void saveUserDetail(UsersRequest userInfo,Users newUser,Users admin){
+    public Object updateUser(Long id,UsersRequest updatedUser,Users admin){
+        if(!userRepo.existsById(id)){
+            Map<String,Object> error = new HashMap<>();
+            error.put("status",false);
+            error.put("error","This user does not exist");
+            return error;
+        }
+        Users updateUser = userRepo.findById(id).get();
+        if(updatedUser.getPassword()!=null){
+            updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+            updateUser.setConfirmPassword(null);
+        }
+        UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
+        LocalDateTime now = LocalDateTime.now();
+        if(userDetail!=null){
+            userDetail.setFull_name(updatedUser.getFullname());
+            int index = updatedUser.getPhoneNumber().startsWith("09")?2:updatedUser.getPhoneNumber().startsWith("251")?3:4;
+            String phoneNumberFormatted = updatedUser.getPhoneNumber().substring(index);
+            UserDetail checkPhone = userDetailRepo.findUserDetailByPhoneNumberContaining(phoneNumberFormatted).orElse(null);
+            if(checkPhone!=null&&!Objects.equals(checkPhone.getId(), userDetail.getId())){
+                Map<String,Object> error = new HashMap<>();
+                error.put("status",false);
+                error.put("error","This phone number is registered");
+                return error;
+            }
+            userDetail.setPhoneNumber(updatedUser.getPhoneNumber());
+            userDetail.setStatus(updatedUser.getStatus());
+            userDetail.setUpdated_at(Timestamp.valueOf(now));
+            userDetail.setUpdated_by(admin);
+            userDetailRepo.save(userDetail);
+        }
+        if(!Objects.equals(updateUser.getBranch().getId(), updatedUser.getBranch())){
+            createUserBranch(updatedUser,updateUser,admin,now);
+        }
+        saveUserRole(updatedUser.getRole(),updateUser,admin);
+        Optional<Branch> userBranch = branchRepo.findById(updatedUser.getBranch());
+        userBranch.ifPresent(updateUser::setBranch);
+        updateUser.setStatus(updatedUser.getStatus());
+        updateUser.setUpdated_by(admin);
+        updateUser.setUpdated_at(Timestamp.valueOf(now));
+        updateUser.setRole(roleRepo.findById(updatedUser.getRole()).get());
+        userRepo.save(updateUser);
+        return userDetailRepo.findUserDetailByUser(updateUser).get();
+    }
+
+    private void createUserBranch(UsersRequest usersRequest,Users user,Users admin,LocalDateTime now){
+        UserBranch userBranch = new UserBranch();
+        userBranch.setUser(user);
+        userBranch.setBranch(branchRepo.findById(usersRequest.getBranch()).orElse(null));
+        userBranch.setAssigned_by(admin);
+        userBranch.setUpdated_by(admin);
+        userBranch.setCreated_at(Timestamp.valueOf(now));
+        userBranch.setUpdated_at(Timestamp.valueOf(now));
+        userBranchRepo.save(userBranch);
+    }
+
+    private UserDetail saveUserDetail(UsersRequest userInfo,Users newUser,Users admin){
         UserDetail newUserDetail = new UserDetail();
         LocalDateTime now = LocalDateTime.now();
         Date date = Date.valueOf(now.toLocalDate());
@@ -120,19 +211,38 @@ public class UserService {
         newUserDetail.setCreated_by(admin);
         newUserDetail.setUpdated_by(admin);
         newUserDetail.setPhoneNumber(userInfo.getPhoneNumber());
-        userDetailRepo.save(newUserDetail);
+        if(userInfo.getStatus()!=null){
+            newUserDetail.setStatus(userInfo.getStatus());
+        }
+        else{
+            newUserDetail.setStatus("Active");
+        }
+        return userDetailRepo.save(newUserDetail);
     }
     private void saveUserRole(Long roleId,Users newUser,Users admin){
-        UserRole newUserRole = new UserRole();
+        UserRole userRole = new UserRole();
         Optional<Role> assignedRole = roleRepo.findById(roleId);
-        assignedRole.ifPresent(newUserRole::setRole);
-        newUserRole.setAssigned_by(admin);
-        newUserRole.setUpdated_by(admin);
+        assignedRole.ifPresent(userRole::setRole);
+        userRole.setAssigned_by(admin);
+        userRole.setUpdated_by(admin);
         LocalDateTime now = LocalDateTime.now();
-        newUserRole.setCreated_at(Timestamp.valueOf(now));
-        newUserRole.setUpdated_at(Timestamp.valueOf(now));
-        newUserRole.setStatus("Active");
-        newUserRole.setUser(newUser);
-        userRoleRepo.save(newUserRole);
+        userRole.setCreated_at(Timestamp.valueOf(now));
+        userRole.setUpdated_at(Timestamp.valueOf(now));
+        userRole.setStatus("Active");
+        userRole.setUser(newUser);
+        userRoleRepo.save(userRole);
+    }
+
+    public static String generateRandomString() {
+        StringBuilder randomString = new StringBuilder(PASSWORDLENGTH);
+        SecureRandom random = new SecureRandom();
+
+        for (int i = 0; i < PASSWORDLENGTH; i++) {
+            int randomIndex = random.nextInt(CHARACTERS.length());
+            char randomChar = CHARACTERS.charAt(randomIndex);
+            randomString.append(randomChar);
+        }
+
+        return randomString.toString();
     }
 }
