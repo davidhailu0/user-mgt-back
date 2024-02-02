@@ -26,6 +26,6 @@ public interface HujjajRepo extends JpaRepository<HUjjaj, Long> {
     @Query(value = "SELECT h from HUjjaj h where h.Maker_Id = :Maker_Id and h.branch_name = :branch_name")
     List<HUjjaj> getMadeHujjajList(@Param("Maker_Id") Users maker_id,@Param("branch_name") String branch_name);
 
-    @Query(value = "SELECT h from HUjjaj h where h.Checker_Id = :Checker_Id and h.branch_name = :branch_name")
-    List<HUjjaj> getCheckedHujjajList(@Param("Checker_Id") Users maker_id,@Param("branch_name") String branch_name);
+    @Query(value = "SELECT h from HUjjaj h where h.branch_name = :branch_name")
+    List<HUjjaj> getCheckedHujjajList(@Param("branch_name") String branch_name);
 }

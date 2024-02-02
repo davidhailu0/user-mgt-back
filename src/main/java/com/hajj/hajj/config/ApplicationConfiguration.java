@@ -1,6 +1,7 @@
 package com.hajj.hajj.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.hajj.hajj.model.UserRole;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UserRoleRepo;
@@ -40,8 +41,7 @@ public class ApplicationConfiguration {
                 throw new UsernameNotFoundException("User not found");
             }
             Users userVerified = user.get();
-            Optional<UserRole> userRole = userRoleRepo.findByUser(userVerified);
-            userRole.ifPresent(role -> userVerified.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_" + role.getRole().getName()))));
+            userVerified.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_" + userVerified.getRole().getName())));
             return userVerified;
         };
     }
@@ -68,5 +68,10 @@ public class ApplicationConfiguration {
     @Bean
     ObjectMapper getObjectMapper(){
         return new ObjectMapper();
+    }
+
+    @Bean
+    Gson getGson(){
+        return new Gson();
     }
 }

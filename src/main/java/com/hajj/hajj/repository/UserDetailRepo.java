@@ -15,4 +15,9 @@ import java.util.Optional;
 public interface UserDetailRepo extends JpaRepository<UserDetail,Long> {
     @Query(value = "SELECT u from UserDetail u where u.user = :user")
     Optional<UserDetail> findUserDetailByUser(@Param("user") Users user);
+
+    Optional<UserDetail> findUserDetailByPhoneNumberContaining(@Param("phoneNumber") String phoneNumber);
+
+    @Query(value = "SELECT u from UserDetail u where u.user.branch.name = :branchName and u.user.role.name != 'superadmin'")
+    List<UserDetail> findUsersByBranch(@Param("branchName") String branch);
 }

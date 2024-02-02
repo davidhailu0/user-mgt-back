@@ -3,6 +3,10 @@ package com.hajj.hajj.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.hajj.hajj.config.JWTUtil;
+import com.hajj.hajj.model.Users;
+import com.hajj.hajj.repository.UsersRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +24,8 @@ import jakarta.validation.Valid;
 public class PermissionController {
     @Autowired
     PermissionService permissionService;
+
+
 
     @GetMapping
     public List<Permission> getAllPermissions(){
@@ -40,4 +46,6 @@ public class PermissionController {
     public Optional<Permission> updatePermission(@PathVariable Long id,@RequestBody PermissionRequest permission){
         return permissionService.updatePermission(id,permission);
     }
+
+
 }

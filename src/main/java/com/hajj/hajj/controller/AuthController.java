@@ -1,5 +1,7 @@
 package com.hajj.hajj.controller;
 
+import com.google.gson.Gson;
+import com.hajj.hajj.service.LoggerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -46,10 +48,16 @@ public class AuthController {
 
 //    @Value("${react.dashboard}")
 //    String dashboard;
+//    @Autowired
+//    LoggerService loggerService;
+
     @Autowired JWTUtil util;
     @Autowired UsersRepo usersRepo;
-    @Autowired UserRoleRepo userRoleRepo;
+
     @Autowired AuthenticationManager authenticationManager;
+
+    @Autowired
+    Gson gson;
 
     @PostMapping("/login")
     public Object loginHandler(@RequestBody LoginCredential body, HttpServletResponse resp){
@@ -88,7 +96,8 @@ public class AuthController {
         String token = request.getHeader("Authorization");
         String username = util.validateTokenAndRetrieveSubject(token.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
-        user.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_"+userRoleRepo.findByUser(user).get().getRole().getName().toUpperCase())));
+        user.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().getName().toUpperCase())));
+        //loggerService.createNewLog(user,request.getRequestURI(), gson.toJson(user));
         return user;
     }
 //    @RequestMapping(value="/dashboard")
