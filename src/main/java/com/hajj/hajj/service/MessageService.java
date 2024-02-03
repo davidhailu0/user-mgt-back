@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 import java.net.ConnectException;
@@ -27,6 +28,9 @@ public class MessageService {
 
     @Value("${sender}")
     String sender;
+
+    @Value("${sender}")
+    String from;
 
     @Value("${messagePassword}")
     String password;
@@ -49,10 +53,19 @@ public class MessageService {
     }
 
     private void sendGetRequest(Message message){
-     url = String.format(url,sender,password,message.getReceiver(),message.getContent());
+
+        String encodedQuery = UriComponentsBuilder.fromUriString(url)
+                .queryParam("username", sender)
+                .queryParam("password",password)
+                .queryParam("password",password)
+                .queryParam("from",from)
+                .queryParam("to",message.getReceiver())
+                .queryParam("text",message.getContent())
+                .build()
+                .toUriString();
      RestTemplate restTemplate = new RestTemplate();
      try {
-         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+         ResponseEntity<String> response = restTemplate.getForEntity(encodedQuery, String.class);
          if (response.getStatusCode().is2xxSuccessful()) {
              message.setMessageStatus(true);
              message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));

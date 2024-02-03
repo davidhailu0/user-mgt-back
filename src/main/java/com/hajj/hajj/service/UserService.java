@@ -88,7 +88,6 @@ public class UserService {
         }
         userBranch.ifPresent(newUser::setBranch);
         newUser.setUsername(userInfo.getUsername());
-        newUser.setPassword(passwordEncoder.encode("1234"));
         newUser.setStatus(userInfo.getStatus());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
@@ -97,11 +96,31 @@ public class UserService {
         newUser.setUpdated_by(admin);
         newUser.setRole(roleRepo.findById(userInfo.getRole()).get());
         newUser.setStatus("Active");
-        newUser = userRepo.saveAndFlush(newUser);
-        UserDetail userDetail = saveUserDetail(userInfo,newUser,admin);
-        saveUserRole(userInfo.getRole(),newUser,admin);
-        createUserBranch(userInfo,newUser,admin,now);
-        generateDefaultPassword(newUser,userDetail);
+        UserDetail userDetail = null;
+        UserRole userRole = null;
+        UserBranch userBranch1 = null;
+        try {
+            newUser = userRepo.saveAndFlush(newUser);
+            userDetail = saveUserDetail(userInfo, newUser, admin);
+            userRole = saveUserRole(userInfo.getRole(), newUser, admin);
+            userBranch1 = createUserBranch(userInfo, newUser, admin, now);
+            generateDefaultPassword(newUser, userDetail,"Account Successfully Created and The New password is %s with username %s");
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            if(newUser.getId()!=null){
+                userRepo.delete(newUser);
+            }
+            if(userDetail!=null) {
+                userDetailRepo.delete(userDetail);
+            }
+            if(userRole!=null){
+                userRoleRepo.delete(userRole);
+            }
+            if(userBranch1!=null){
+                userBranchRepo.delete(userBranch1);
+            }
+        }
         return newUser;
     }
 
@@ -127,17 +146,17 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail);
+        generateDefaultPassword(user,userDetail,"Account Password Reset Successfully and The New password is %s with username %s");
         return true;
     }
 
-    private void generateDefaultPassword(Users user,UserDetail userDetail){
+    private void generateDefaultPassword(Users user,UserDetail userDetail,String messageContent){
         String rawPassword = generateRandomString();
-//        String rawPassword = "1234";
+        messageContent = String.format(messageContent,rawPassword,user.getUsername());
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);
-        messageService.saveMessage(userDetail.getPhoneNumber(),rawPassword);
+        messageService.saveMessage(userDetail.getPhoneNumber(),messageContent);
         userRepo.save(user);
     }
 
@@ -186,7 +205,7 @@ public class UserService {
         return userDetailRepo.findUserDetailByUser(updateUser).get();
     }
 
-    private void createUserBranch(UsersRequest usersRequest,Users user,Users admin,LocalDateTime now){
+    private UserBranch createUserBranch(UsersRequest usersRequest,Users user,Users admin,LocalDateTime now){
         UserBranch userBranch = new UserBranch();
         userBranch.setUser(user);
         userBranch.setBranch(branchRepo.findById(usersRequest.getBranch()).orElse(null));
@@ -194,7 +213,7 @@ public class UserService {
         userBranch.setUpdated_by(admin);
         userBranch.setCreated_at(Timestamp.valueOf(now));
         userBranch.setUpdated_at(Timestamp.valueOf(now));
-        userBranchRepo.save(userBranch);
+        return userBranchRepo.save(userBranch);
     }
 
     private UserDetail saveUserDetail(UsersRequest userInfo,Users newUser,Users admin){
@@ -219,7 +238,7 @@ public class UserService {
         }
         return userDetailRepo.save(newUserDetail);
     }
-    private void saveUserRole(Long roleId,Users newUser,Users admin){
+    private UserRole saveUserRole(Long roleId,Users newUser,Users admin){
         UserRole userRole = new UserRole();
         Optional<Role> assignedRole = roleRepo.findById(roleId);
         assignedRole.ifPresent(userRole::setRole);
@@ -230,7 +249,7 @@ public class UserService {
         userRole.setUpdated_at(Timestamp.valueOf(now));
         userRole.setStatus("Active");
         userRole.setUser(newUser);
-        userRoleRepo.save(userRole);
+        return userRoleRepo.save(userRole);
     }
 
     public static String generateRandomString() {
