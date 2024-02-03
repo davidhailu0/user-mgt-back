@@ -53,7 +53,6 @@ public class UserController {
 
     @PostMapping("/branch")
     public List<UserDetail> getUsersByBranch(@RequestBody Map<String,String> requestBody){
-        System.out.println(requestBody.get("branchName"));
         return userService.getUsersByBranch(requestBody.get("branchName"));
     }
 
