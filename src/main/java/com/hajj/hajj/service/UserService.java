@@ -24,7 +24,7 @@ public class UserService {
 
     private static final String CHARACTERS = "123456789";
 
-    final static int PASSWORDLENGTH = 3;
+    final static int PASSWORDLENGTH = 4;
     @Autowired
     UsersRepo userRepo;
 
@@ -252,7 +252,7 @@ public class UserService {
     }
 
     public static String generateRandomString(String username) {
-        String randomString = username+"@";
+        String randomString = username.substring(0,2);
         SecureRandom random = new SecureRandom();
         for (int i = 0; i < PASSWORDLENGTH; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());
