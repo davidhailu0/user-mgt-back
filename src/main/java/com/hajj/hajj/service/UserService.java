@@ -253,13 +253,12 @@ public class UserService {
 
     public static String generateRandomString(String username) {
         String randomString = username+"@";
-
+        SecureRandom random = new SecureRandom();
         for (int i = 0; i < PASSWORDLENGTH; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());
             char randomChar = CHARACTERS.charAt(randomIndex);
             randomString = randomString+randomChar;
         }
-
         return randomString;
     }
 }
