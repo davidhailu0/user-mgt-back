@@ -22,9 +22,9 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class UserService {
 
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+    private static final String CHARACTERS = "123456789";
 
-    final static int PASSWORDLENGTH = 5;
+    final static int PASSWORDLENGTH = 3;
     @Autowired
     UsersRepo userRepo;
 
@@ -107,7 +107,6 @@ public class UserService {
             generateDefaultPassword(newUser, userDetail,"Account Successfully Created and The New password is %s with username %s");
         }
         catch(Exception e){
-            System.out.println(e.getMessage());
             if(newUser.getId()!=null){
                 userRepo.delete(newUser);
             }
@@ -151,7 +150,7 @@ public class UserService {
     }
 
     private void generateDefaultPassword(Users user,UserDetail userDetail,String messageContent){
-        String rawPassword = generateRandomString();
+        String rawPassword = generateRandomString(user.getUsername());
         messageContent = String.format(messageContent,rawPassword,user.getUsername());
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
@@ -252,16 +251,15 @@ public class UserService {
         return userRoleRepo.save(userRole);
     }
 
-    public static String generateRandomString() {
-        StringBuilder randomString = new StringBuilder(PASSWORDLENGTH);
-        SecureRandom random = new SecureRandom();
+    public static String generateRandomString(String username) {
+        String randomString = username+"@";
 
         for (int i = 0; i < PASSWORDLENGTH; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());
             char randomChar = CHARACTERS.charAt(randomIndex);
-            randomString.append(randomChar);
+            randomString = randomString+randomChar;
         }
 
-        return randomString.toString();
+        return randomString;
     }
 }
