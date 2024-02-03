@@ -28,7 +28,6 @@ public class Users implements UserDetails{
     Long id;
     @Column(unique = true)
     @NotBlank String username;
-    @NotBlank
     @JsonProperty(access = Access.WRITE_ONLY)
     String password;
     String confirmPassword;
