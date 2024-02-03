@@ -8,6 +8,6 @@ import lombok.Setter;
 public class HajjQueryDTO {
     String status;
     String fromDate;
-
     String toDate;
+    String branchName;
 }
