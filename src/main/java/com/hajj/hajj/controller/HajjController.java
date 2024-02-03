@@ -76,12 +76,18 @@ public class HajjController {
         return hajjData;
     }
 
-    @GetMapping("/filteredHajjReport")
-    public List<HUjjaj> filteredData(HajjQueryDTO hajjQueryDTO){
-        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null){
+    @PostMapping("/filteredHajjReport")
+    public List<HUjjaj> filteredData(@RequestBody HajjQueryDTO hajjQueryDTO){
+        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null){
             return List.of();
         }
-        List<HUjjaj> allHajj = hujjajRepo.findAll();
+        List<HUjjaj> allHajj;
+        if(hajjQueryDTO.getBranchName()!=null&&!hajjQueryDTO.getBranchName().equals("null")){
+            allHajj = hujjajRepo.getDashboardData(hajjQueryDTO.getBranchName());
+        }
+        else{
+            allHajj = hujjajRepo.findAll();
+        }
         allHajj = allHajj.stream().filter((hj)->{
             String pattern = "yyyy-MM-dd";
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
