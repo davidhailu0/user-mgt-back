@@ -1,25 +1,4 @@
 FROM maven:3.8.4-openjdk-17
-ENV spring.datasource.url=jdbc:mysql://localhost:3306/hajj
-ENV spring.datasource.username=root
-ENV spring.datasource.password=Password123@
-ENV spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-ENV spring.jpa.open-in-view=true
-ENV spring.jpa.hibernate.ddl-auto=update
-ENV spring.jpa.show-sql=true
-ENV authorized.ip=10.11.0.46
-ENV server.port=8080
-ENV messageURL=http://192.168.1.9:13013/cgi-bin/sendsms?username=%s&password=%s&from=9334&to=%s&text=%s
-ENV sender=zamzam
-ENV messagePassword=zam@1234
-ENV hajjApi=https://ethiohajj.com/api/pilgrim/{payment_code}
-ENV hajjApi_post=https://ethiohajj.com/api/pilgrim
-ENV x-auth=LYlB9KIMng80TdLE9uPYf5AjrHETZA5HiPHYyPB6evsLaMX0q9LpupQDDZckfOv8
-ENV x-secret=zFYBNEIDH615R3EQLLQuzMWnHyJHFS3CxOoe1Y5KolhEJje45Vk3ha9KMSMXmlqD
-ENV bank_code=ZEMZEM13
-ENV jwt_secret=ZZB123
-ENV fundtransAPi=http://10.10.11.20/HajjFundTransfer/1.0.0/
-ENV name_Query=http://10.10.11.20/BalanceandNameQuery/1.0.0/
-ENV wso2Token=eyJ4NXQiOiJNV0l5TkRJNVlqRTJaV1kxT0RNd01XSTNOR1ptTVRZeU5UTTJOVFZoWlRnMU5UTTNaVE5oTldKbVpERTFPVEE0TldFMVlUaGxNak5sTldFellqSXlZUSIsImtpZCI6Ik1XSXlOREk1WWpFMlpXWTFPRE13TVdJM05HWm1NVFl5TlRNMk5UVmhaVGcxTlRNM1pUTmhOV0ptWkRFMU9UQTROV0UxWVRobE1qTmxOV0V6WWpJeVlRX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI0NThkN2I0My0xOTU0LTRlNjQtYjI0NS1iNDg4YjAyYWNmNmMiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6IlRJNHJlUXlheERiYUxhQVVfVWViMDk4d1ZJa2EiLCJuYmYiOjE3MDYxNzI2MjMsImF6cCI6IlRJNHJlUXlheERiYUxhQVVfVWViMDk4d1ZJa2EiLCJzY29wZSI6ImRlZmF1bHQiLCJpc3MiOiJodHRwczpcL1wvMTkyLjE2OC4xLjI5Ojk0NDhcL29hdXRoMlwvdG9rZW4iLCJleHAiOjEwMzQ2MTcyNjIzLCJpYXQiOjE3MDYxNzI2MjMsImp0aSI6IjE1ZGQwODUzLWE5YTYtNDc1Yy04YTc2LTVhMjYyYWI3ZWYxYSIsImNsaWVudF9pZCI6IlRJNHJlUXlheERiYUxhQVVfVWViMDk4d1ZJa2EifQ.uQ5qBb43gg9OwAKCQDW2Bi9muh0cp5v0TN1Omi0e9t9LZzaDMsHX5mQmDFiQS-zJFh0E06GMcqJbV_yDLnrBKEQp15E6d_bKwZaT8EsBEVZvz6Gg_G04QN52Jt8UPRUxZ5ZhUK7XoHcH99hSIATy3q9-OFA0zu6FJn7fkF8FBif9LIGBjPqhRtm9h8930h_OBtWPC_NAT0onPIHub941TnQAkulVwW4dGqBNGqKAIQ4fVaix6K9zk8qcJ-bc0JXgCJ3D_9YYEUpNe_vjFL02FldjfCL7rnl6KsZKb6nuMsCl8DDzqJxgrSu_QGWw70Vs21wuq7aQCS3A0oiyXjLlAQ
 
 WORKDIR /app
 
