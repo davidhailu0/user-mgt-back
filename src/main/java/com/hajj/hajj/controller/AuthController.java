@@ -43,8 +43,8 @@ import com.hajj.hajj.repository.UsersRepo;
 @RequestMapping("api/auth")
 public class AuthController {
 
-    @Value("${react.login}")
-    String redirectPage;
+//    @Value("${react.login}")
+//    String redirectPage;
 
 //    @Value("${react.dashboard}")
 //    String dashboard;

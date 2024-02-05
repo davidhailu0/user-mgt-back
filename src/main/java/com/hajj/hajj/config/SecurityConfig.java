@@ -47,8 +47,8 @@ public class SecurityConfig {
     AuthenticationProvider authenticationProvider;
 
 
-    @Value("${authorized.ip}")
-    String authorizedIP;
+//    @Value("${authorized.ip}")
+//    String authorizedIP;
 
     @Autowired
     LoggerService loggerService;
