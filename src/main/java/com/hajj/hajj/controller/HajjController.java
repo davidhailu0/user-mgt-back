@@ -18,7 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -58,6 +61,26 @@ public class HajjController {
 
     @Autowired
     Gson gson;
+
+    String token;
+
+
+    @Scheduled(fixedRate = 1000*60*60*24)
+    public void refreshToken(){
+        RestTemplate restTemplate=new RestTemplate();
+        HttpHeaders headers =  new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", env.getProperty("grant_type"));
+        map.add("client_id", env.getProperty("client_id"));
+        map.add("client_secret", env.getProperty("client_secret"));
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(map,headers);
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(Objects.requireNonNull(env.getProperty("wso2TokenURL")), HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
+        Map<String, Object> responseBody = responseEntity.getBody();
+        token = (String) responseBody.get("access_token");
+    }
 
 
     @GetMapping("/getHajjData")
@@ -125,7 +148,6 @@ public class HajjController {
     public  Object get_nameQuery(@PathVariable String account_number,HttpServletRequest request) {
 
         final String name_Query_api = env.getProperty("name_Query") + account_number;
-        String token = env.getProperty("wso2Token");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
@@ -401,7 +423,6 @@ public class HajjController {
         }
 
         String apiUrl=env.getProperty("fundtransAPi");
-        String token=env.getProperty("wso2Token");
         RestTemplate restTemplate=new RestTemplate();
         HttpHeaders headers=new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
