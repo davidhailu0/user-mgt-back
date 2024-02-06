@@ -1,0 +1,37 @@
+variables:
+  CI_REGISTRY: "gitlab.zamzambank.local"
+  CI_REGISTRY_IMAGE: "gitlab.zamzambank.local/zamzam/hajj/hajj-backend"
+  GIT_SSL_NO_VERIFY: "true"
+
+
+
+stages:
+  - build
+  - deploy-prod
+
+build image:
+  stage: build
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  script:
+    - case "$CI_COMMIT_REF_NAME" in  $CI_DEFAULT_BRANCH) export BUILD_NAME=master;; $CI_COMMIT_BRANCH) export BUILD_NAME=$CI_COMMIT_BRANCH;; esac
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:$BUILD_NAME-$CI_COMMIT_SHORT_SHA --tag $CI_REGISTRY_IMAGE:$BUILD_NAME-latest .
+    - docker push $CI_REGISTRY_IMAGE:$BUILD_NAME-latest
+    - docker push $CI_REGISTRY_IMAGE:$BUILD_NAME-$CI_COMMIT_SHORT_SHA
+  tags:
+    - main
+
+deploy-prod:
+  image: alpine:latest
+  stage: deploy-prod
+  script:
+    - apk update && apk add openssh-client
+    - chmod 0600 $ITS2_SRV_SSH_KEY
+    - ssh -oStrictHostKeyChecking=no -i $ITS2_SRV_SSH_KEY $ITS2_SSH_USER@$ITS2_SRV_IP -p $SSH_PORT "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
+    - ssh -oStrictHostKeyChecking=no -i $ITS2_SRV_SSH_KEY $ITS2_SSH_USER@$ITS2_SRV_IP -p $SSH_PORT "cd /home/zzb/srv/hajj && docker-compose pull hajj-backend; docker-compose up -d hajj-backend"
+  only:
+    - master
+  tags:
+    - main
