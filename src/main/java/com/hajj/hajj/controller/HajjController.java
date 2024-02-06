@@ -82,7 +82,48 @@ public class HajjController {
         token = (String) responseBody.get("access_token");
     }
 
-
+   Map<String,Object> sethajjData(HUjjaj hUjjaj){
+       Map<String, String> uriVariables = new HashMap<>();
+       uriVariables.put("TXNREF", hUjjaj.getTrans_ref_no());
+       uriVariables.put("TXNAMT", hUjjaj.getAmount());
+       RestTemplate restTemplate=new RestTemplate();
+       HttpHeaders headers =  new HttpHeaders();
+       headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+       headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
+       headers.set("Authorization", "Bearer " + token);
+       headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+       HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(headers);
+       ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(Objects.requireNonNull(env.getProperty("verifyTransactionURL")), HttpMethod.GET, requestEntity,new ParameterizedTypeReference<Map<String, Object>>() {
+       },uriVariables);
+       Map<String, Object> responseBody = responseEntity.getBody();
+       String status = (String) responseBody.get("STATUS");
+       if(status.equals("SUCCESS")){
+           hUjjaj.set_fundtransfered(true);
+           hUjjaj.setEXTERNAL_REF_NO(responseBody.get("TRANS_REF_NO").toString());
+           hUjjaj.setTrans_ref_no(responseBody.get("FCCREF").toString());
+           hUjjaj.setAC_BRANCH(responseBody.get("AC_BRANCH").toString());
+           hUjjaj.setNARRATION(responseBody.get("NARRATIVE").toString());
+           hUjjaj.setAccount_holder(responseBody.get("ACCOUNT_HOLDER").toString());
+           hUjjaj.setAccount_number(responseBody.get("ACCOUNT_NUMBER").toString());
+           hUjjaj.setLCY_AMOUNT(responseBody.get("LCY_AMOUNT").toString());
+           hUjjaj.setRELATED_CUSTOMER(responseBody.get("RELATED_CUSTOMER").toString());
+           hUjjaj.setRELATED_ACCOUNT(responseBody.get("RELATED_ACCOUNT").toString());
+           hUjjaj.setTRN_DT(responseBody.get("TRN_DT").toString());
+           hUjjaj.setVALUE_DT(responseBody.get("VALUE_DATE").toString());
+//           hUjjaj.setAUTH_ID(userDetailRepo.findUserDetailByUser(checker).get().getFull_name());
+           hUjjaj.setAC_CCY(responseBody.get("AC_CCY").toString());
+           hUjjaj.setAUTH_TIMESTAMP(responseBody.get("AUTH_TIMESTAMP").toString());
+           hujjajRepo.save(hUjjaj);
+           Map<String,Object> success = new HashMap<>();
+           success.put("success",true);
+           success.put("message","Transaction Made Successfully");
+           return success;
+       }
+       Map<String,Object> error = new HashMap<>();
+       error.put("success",false);
+       error.put("error",responseBody.get("ErrorMessage"));
+       return error;
+   }
     @GetMapping("/getHajjData")
     public Object getHajjData(HttpServletRequest request){
         Users user = getUser(request);
@@ -248,6 +289,8 @@ public class HajjController {
         return error;
     }
 
+
+
     @GetMapping("/get_hujaj/{payment_code}")
     public  Object get_hujaj(@PathVariable String payment_code,HttpServletRequest request) throws JsonProcessingException {
         final String apiUrl = env.getProperty("hajjApi");
@@ -308,6 +351,12 @@ public class HajjController {
             error.put("success", false);
             loggerService.createNewLog(user,request.getRequestURI(),error.toString());
             return error;
+        }
+        hujaj.setMaker_Id(user);
+        Map<String,Object> data = sethajjData(hujaj);
+        if(!(boolean)data.get("status")){
+            loggerService.createNewLog(user,request.getRequestURI(),data.toString());
+            return data;
         }
         return make_hujaj_transaction(hujaj,request);
     }
@@ -434,12 +483,13 @@ public class HajjController {
         if(status)
         {
             updatedHujaj.setPaid(true);
+            updatedHujaj.setChecker_Id(user);
             hujjajRepo.save(updatedHujaj);
-            Map<String, Object> error = new HashMap<>();
-            error.put("message", "Transaction Authorized Successfully");
-            error.put("success", true);
-            loggerService.createNewLog(user,request.getRequestURI(),error.toString());
-            return error;
+            Map<String, Object> success = new HashMap<>();
+            success.put("message", "Transaction Authorized Successfully");
+            success.put("success", true);
+            loggerService.createNewLog(user,request.getRequestURI(),success.toString());
+            return success;
         }
         Map<String, Object> error = new HashMap<>();
         error.put("error", resp.get("error"));
