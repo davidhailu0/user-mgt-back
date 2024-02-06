@@ -54,6 +54,7 @@ public class HUjjaj {
     String NODE;
     String AC_CCY ;
     String AUTH_TIMESTAMP;
+    boolean isFromMobile;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Maker_Id",referencedColumnName = "id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

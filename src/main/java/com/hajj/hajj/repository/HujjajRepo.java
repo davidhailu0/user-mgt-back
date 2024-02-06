@@ -28,4 +28,11 @@ public interface HujjajRepo extends JpaRepository<HUjjaj, Long> {
 
     @Query(value = "SELECT h from HUjjaj h where h.branch_name = :branch_name")
     List<HUjjaj> getCheckedHujjajList(@Param("branch_name") String branch_name);
+
+    @Query(value = "SELECT h from HUjjaj h where h.TRN_REF_NO = :transactionRef")
+    Optional<HUjjaj> checkHajjData(@Param("transactionRef") String transactionRef);
+
+    @Query(value = "SELECT h from HUjjaj h where h.isFromMobile = true and h.branch_name = :branch_name")
+    List<HUjjaj> getMobileHajjData(@Param("branch_name") String branch_name);
+
 }
