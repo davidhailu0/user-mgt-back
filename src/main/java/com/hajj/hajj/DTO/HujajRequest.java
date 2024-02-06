@@ -43,6 +43,6 @@ public class HujajRequest {
     String NODE;
     String AC_CCY ;
     String AUTH_TIMESTAMP;
-
+    boolean isFromMobile;
 
 }
