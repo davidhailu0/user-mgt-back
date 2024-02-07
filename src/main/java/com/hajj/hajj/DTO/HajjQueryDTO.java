@@ -10,4 +10,5 @@ public class HajjQueryDTO {
     String fromDate;
     String toDate;
     String branchName;
+    String isFromMobile;
 }
