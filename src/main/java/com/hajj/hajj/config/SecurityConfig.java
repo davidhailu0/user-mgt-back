@@ -170,7 +170,7 @@ public class SecurityConfig {
 
     Optional<Users> getUser(HttpServletRequest request)throws TokenExpiredException,JWTDecodeException,JWTVerificationException{
      String jwtToken = request.getHeader("Authorization");
-     if(jwtToken.split(" ").length==2){
+     if(jwtToken!=null&&jwtToken.split(" ").length==2){
         String username = util.validateTokenAndRetrieveSubject(jwtToken.split(" ")[1]);
         return usersRepo.findUsersByUsername(username);
      }
