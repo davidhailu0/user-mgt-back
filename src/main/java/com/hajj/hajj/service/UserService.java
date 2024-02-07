@@ -65,6 +65,10 @@ public class UserService {
         return userRepo.findById(id);
     }
 
+    public List<Users> allUnapprovedUsers(){
+        return userRepo.findUnapprovedData();
+    }
+
     public List<UserDetail> getUsersByBranch(String branchName){
         return userDetailRepo.findUsersByBranch(branchName);
     }
@@ -95,7 +99,7 @@ public class UserService {
         newUser.setCreated_by(admin);
         newUser.setUpdated_by(admin);
         newUser.setRole(roleRepo.findById(userInfo.getRole()).get());
-        newUser.setStatus("Active");
+        newUser.setStatus("Inactive");
         UserDetail userDetail = null;
         UserRole userRole = null;
         UserBranch userBranch1 = null;
@@ -104,7 +108,7 @@ public class UserService {
             userDetail = saveUserDetail(userInfo, newUser, admin);
             userRole = saveUserRole(userInfo.getRole(), newUser, admin);
             userBranch1 = createUserBranch(userInfo, newUser, admin, now);
-            generateDefaultPassword(newUser, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
+            //generateDefaultPassword(newUser, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
         }
         catch(Exception e){
             if(newUser.getId()!=null){
@@ -136,6 +140,28 @@ public class UserService {
         Map<String,Object> error = new HashMap<>();
         error.put("success",false);
         error.put("message","Make sure the previous password is entered correctly or Ask for Password Reset");
+        return error;
+    }
+
+    public Object approveUser(Long id){
+        Users user = userRepo.findById(id).orElse(null);
+        Map<String,Object> error = new HashMap<>();
+        error.put("success",false);
+        if(user!=null){
+            UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).orElse(null);
+            if(userDetail!=null){
+                generateDefaultPassword(user, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
+                Map<String,Object> success = new HashMap<>();
+                user.setStatus("Active");
+                userRepo.save(user);
+                success.put("success",true);
+                success.put("message","User Approved Successfully");
+                return success;
+            }
+            error.put("error","User Detail does not exist");
+            return error;
+        }
+        error.put("error","User does not exist");
         return error;
     }
 

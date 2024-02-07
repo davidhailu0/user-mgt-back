@@ -75,6 +75,15 @@ public class UserController {
         return resp;
     }
 
+    @PreAuthorize("hasRole('superadmin')")
+    @GetMapping("/approve/{id}")
+    public Object approveUser(@PathVariable Long id,HttpServletRequest request){
+        Users user = getUser(request);
+        Object resp = userService.approveUser(id);
+        loggerService.createNewLog(user,request.getRequestURI(),resp.toString());
+        return resp;
+    }
+
     @PutMapping("/changePassword")
     public Object changePassword(HttpServletRequest request,@RequestBody ResetPasswordDTO resetPasswordDTO){
         Users user = getUser(request);
