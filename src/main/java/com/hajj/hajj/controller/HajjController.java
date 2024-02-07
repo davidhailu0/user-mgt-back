@@ -66,7 +66,9 @@ public class HajjController {
     String token;
 
 
-    @Scheduled(fixedRate = 1000*60*60*24)
+//    @Scheduled(fixedRate = 1000*60*60*24)
+
+        @Scheduled(fixedRate = 1000*60*5)
     public void refreshToken(){
         RestTemplate restTemplate=new RestTemplate();
         HttpHeaders headers =  new HttpHeaders();
@@ -81,6 +83,8 @@ public class HajjController {
         ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(Objects.requireNonNull(env.getProperty("wso2TokenURL")), HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
         Map<String, Object> responseBody = responseEntity.getBody();
         token = (String) responseBody.get("access_token");
+            System.out.println(token);
+
     }
 
    Map<String,Object> sethajjData(HUjjaj hUjjaj){
