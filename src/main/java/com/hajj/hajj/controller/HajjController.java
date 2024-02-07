@@ -149,15 +149,26 @@ public class HajjController {
 
     @PostMapping("/filteredHajjReport")
     public List<HUjjaj> filteredData(@RequestBody HajjQueryDTO hajjQueryDTO){
-        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null){
+        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null&&hajjQueryDTO.getIsFromMobile()==null){
             return List.of();
         }
         List<HUjjaj> allHajj;
         if(hajjQueryDTO.getBranchName()!=null&&!hajjQueryDTO.getBranchName().equals("null")){
             allHajj = hujjajRepo.getDashboardData(hajjQueryDTO.getBranchName());
+            if(hajjQueryDTO.getIsFromMobile().equals("web")
+                    ||hajjQueryDTO.getIsFromMobile().equals("mobile")){
+                allHajj = allHajj.stream().filter((hj)->hj.isFromMobile()==hajjQueryDTO.getIsFromMobile().equals("mobile")).toList();
+            }
         }
         else{
-            allHajj = hujjajRepo.findAll();
+            if(hajjQueryDTO.getIsFromMobile()==null
+                    ||hajjQueryDTO.getIsFromMobile().equals("null")
+                    ||hajjQueryDTO.getIsFromMobile().equals("all")){
+                allHajj = hujjajRepo.findAll();
+            }
+            else{
+                allHajj = hujjajRepo.mobileHajjData(hajjQueryDTO.getIsFromMobile().equals("mobile"));
+            }
         }
         allHajj = allHajj.stream().filter((hj)->{
             String pattern = "yyyy-MM-dd";
