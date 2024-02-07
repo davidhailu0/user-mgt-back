@@ -98,6 +98,22 @@ public class SecurityConfig {
                                         """
                         );
                     }
+                    else if(response.getStatus()==403){
+                        loggerService.createNewLog(null, request.getRequestURI(), """
+                            {
+                             "success":false,
+                             "error":"access to the requested resource is forbidden"
+                            }
+                             """);
+                        response.getWriter().write(
+                                """
+                                       {
+                                        "success":false,
+                                        "error":"access to the requested resource is forbidden"
+                                       }
+                                        """
+                        );
+                    }
                     else if(response.getStatus()==404){
 
                         loggerService.createNewLog(getUser(request).isPresent()?getUser(request).get():null, request.getRequestURI(), """
@@ -121,7 +137,7 @@ public class SecurityConfig {
                         loggerService.createNewLog(getUser(request).isPresent()?getUser(request).get():null, request.getRequestURI(), """
                             {
                              "success":false,
-                             "error":"Please Check Your URL or Request Body"
+                             "error":"Inval"
                             }
                              """);
                         response.getWriter().write(
