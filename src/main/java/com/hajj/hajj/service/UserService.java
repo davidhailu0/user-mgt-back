@@ -104,7 +104,8 @@ public class UserService {
             userDetail = saveUserDetail(userInfo, newUser, admin);
             userRole = saveUserRole(userInfo.getRole(), newUser, admin);
             userBranch1 = createUserBranch(userInfo, newUser, admin, now);
-            generateDefaultPassword(newUser, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
+            generateDefaultPassword(newUser, userDetail,"Dear %s,\n" +
+                    "Hajj Payment Portal account has been successfully created. Your username is %s, and your password is %s");
         }
         catch(Exception e){
             if(newUser.getId()!=null){
@@ -145,7 +146,8 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,"Dear %s,\nHajj Payment Portal account password reset successfully and the new password is %s with username %s");
+        generateDefaultPassword(user,userDetail,"Dear %s,\n" +
+                " Your password for Hajj Payment Portal account has been successfully rested. Your new password is %s.");
         return true;
     }
 

@@ -83,7 +83,6 @@ public class HajjController {
         ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(Objects.requireNonNull(env.getProperty("wso2TokenURL")), HttpMethod.POST, requestEntity, new ParameterizedTypeReference<Map<String, Object>>() {});
         Map<String, Object> responseBody = responseEntity.getBody();
         token = (String) responseBody.get("access_token");
-            System.out.println(token);
 
     }
 
@@ -210,7 +209,7 @@ public class HajjController {
     @GetMapping("/get_nameQuery/{account_number}")
     public  Object get_nameQuery(@PathVariable String account_number,HttpServletRequest request) {
 
-        final String name_Query_api = env.getProperty("name_Query") + account_number;
+        final String name_Query_api = env.getProperty("name_Query")+account_number ;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
