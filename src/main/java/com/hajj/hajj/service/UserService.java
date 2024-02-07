@@ -104,7 +104,7 @@ public class UserService {
             userDetail = saveUserDetail(userInfo, newUser, admin);
             userRole = saveUserRole(userInfo.getRole(), newUser, admin);
             userBranch1 = createUserBranch(userInfo, newUser, admin, now);
-            generateDefaultPassword(newUser, userDetail,"Account Successfully Created and The New password is %s with username %s");
+            generateDefaultPassword(newUser, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
         }
         catch(Exception e){
             if(newUser.getId()!=null){
@@ -145,13 +145,13 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,"Account Password Reset Successfully and The New password is %s with username %s");
+        generateDefaultPassword(user,userDetail,"Dear %s,\nHajj Payment Portal account password reset successfully and the new password is %s with username %s");
         return true;
     }
 
     private void generateDefaultPassword(Users user,UserDetail userDetail,String messageContent){
         String rawPassword = generateRandomString(user.getUsername());
-        messageContent = String.format(messageContent,rawPassword,user.getUsername());
+        messageContent = String.format(messageContent,userDetail.getFull_name(),rawPassword,user.getUsername());
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);

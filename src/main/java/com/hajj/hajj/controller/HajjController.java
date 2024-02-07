@@ -306,11 +306,12 @@ public class HajjController {
     public  Object get_hujaj(@PathVariable String payment_code,HttpServletRequest request) throws JsonProcessingException {
         final String apiUrl = env.getProperty("hajjApi");
         Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("payment_code", payment_code);
+        uriVariables.put("hujajcode", payment_code);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-Authorization", env.getProperty("x-auth"));
         headers.set("x-Authorization-Secret", env.getProperty("x-secret"));
+        headers.set("Authorization", "Bearer " + token);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
@@ -696,6 +697,7 @@ public  Object Post_to_hajserver(HUjjaj hUjjaj)
       HttpHeaders headers =  new HttpHeaders();
     headers.add("x-Authorization", env.getProperty("x-auth"));
     headers.add("x-Authorization-Secret", env.getProperty("x-secret"));
+    headers.set("Authorization", "Bearer " + token);
     headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     headers.add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36");
     headers.setContentType(MediaType.APPLICATION_JSON);
