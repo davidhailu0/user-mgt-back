@@ -177,6 +177,7 @@ public class UserService {
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
         generateDefaultPassword(user,userDetail,false);
+        generateDefaultPassword(user,userDetail,false);
         return true;
     }
 
