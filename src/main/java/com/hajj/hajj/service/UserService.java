@@ -1,7 +1,6 @@
 package com.hajj.hajj.service;
 
 import com.hajj.hajj.DTO.ResetPasswordDTO;
-import com.hajj.hajj.DTO.UserRoleRequest;
 import com.hajj.hajj.DTO.UsersRequest;
 import com.hajj.hajj.model.*;
 import com.hajj.hajj.repository.*;
@@ -17,7 +16,6 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class UserService {
@@ -65,11 +63,11 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public List<Users> allUnapprovedUsers(String branchName){
-        if(branchName.equals("all")){
-            return userRepo.findUnapprovedData();
+    public List<UserDetail> allUnapprovedUsers(String branchName,Users admin){
+        if(branchName.equals("All")){
+            return userDetailRepo.findUnapprovedData(admin);
         }
-        return userRepo.findUnapprovedDataWithBranch(branchName);
+        return userDetailRepo.findUnapprovedDataWithBranch(branchName,admin);
     }
 
     public List<UserDetail> getUsersByBranch(String branchName){
@@ -95,7 +93,6 @@ public class UserService {
         }
         userBranch.ifPresent(newUser::setBranch);
         newUser.setUsername(userInfo.getUsername());
-        newUser.setStatus(userInfo.getStatus());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
         newUser.setUpdated_at(Timestamp.valueOf(now));
@@ -105,13 +102,11 @@ public class UserService {
         newUser.setStatus("Inactive");
         UserDetail userDetail = null;
         UserRole userRole = null;
-        UserBranch userBranch1 = null;
         try {
             newUser = userRepo.saveAndFlush(newUser);
             userDetail = saveUserDetail(userInfo, newUser, admin);
             userRole = saveUserRole(userInfo.getRole(), newUser, admin);
-            userBranch1 = createUserBranch(userInfo, newUser, admin, now);
-            //generateDefaultPassword(newUser, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
+            createUserBranch(userInfo, newUser, admin, now);
         }
         catch(Exception e){
             if(newUser.getId()!=null){
@@ -122,9 +117,6 @@ public class UserService {
             }
             if(userRole!=null){
                 userRoleRepo.delete(userRole);
-            }
-            if(userBranch1!=null){
-                userBranchRepo.delete(userBranch1);
             }
         }
         return newUser;
@@ -146,18 +138,28 @@ public class UserService {
         return error;
     }
 
-    public Object approveUser(Long id){
+    public Object approveUser(Long id,Users admin){
         Users user = userRepo.findById(id).orElse(null);
         Map<String,Object> error = new HashMap<>();
         error.put("success",false);
         if(user!=null){
             UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).orElse(null);
+            if(Objects.equals(user.getCreated_by().getId(), admin.getId())){
+                error.put("error","You can not authorize user you created");
+                return error;
+            }
             if(userDetail!=null){
-                generateDefaultPassword(user, userDetail,"Dear %s,\nHajj Payment Portal account is successfully created and The New password is %s with username %s");
+                generateDefaultPassword(user, userDetail,true);
                 Map<String,Object> success = new HashMap<>();
                 user.setStatus("Active");
+                UserDetail userDetail1 = userDetailRepo.findUserDetailByUser(user).orElse(null);
+                if(userDetail1!=null){
+                    userDetail1.setStatus("Active");
+                    userDetailRepo.save(userDetail1);
+                }
                 userRepo.save(user);
                 success.put("success",true);
+                user.setChecker(admin);
                 success.put("message","User Approved Successfully");
                 return success;
             }
@@ -174,13 +176,19 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,"Dear %s,\nHajj Payment Portal account password reset successfully and the new password is %s with username %s");
+        generateDefaultPassword(user,userDetail,false);
         return true;
     }
 
-    private void generateDefaultPassword(Users user,UserDetail userDetail,String messageContent){
+    private void generateDefaultPassword(Users user,UserDetail userDetail,boolean fromSignUp){
         String rawPassword = generateRandomString(user.getUsername());
-        messageContent = String.format(messageContent,userDetail.getFull_name(),rawPassword,user.getUsername());
+        String messageContent;
+        if(fromSignUp){
+            messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s.",userDetail.getFull_name(),user.getUsername(),rawPassword);
+        }
+        else{
+            messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully reset. Your new password is %s.",userDetail.getFull_name(),rawPassword);
+        }
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);
@@ -200,6 +208,15 @@ public class UserService {
             updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             updateUser.setConfirmPassword(null);
         }
+        if(!updateUser.getRole().getId().equals(updatedUser.getRole())){
+            updateUser.setStatus("Inactive");
+            userRepo.save(updateUser);
+            UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
+            if(userDetail!=null){
+                userDetail.setStatus("Inactive");
+                userDetailRepo.save(userDetail);
+            }
+        }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
         LocalDateTime now = LocalDateTime.now();
         if(userDetail!=null){
@@ -214,7 +231,6 @@ public class UserService {
                 return error;
             }
             userDetail.setPhoneNumber(updatedUser.getPhoneNumber());
-            userDetail.setStatus(updatedUser.getStatus());
             userDetail.setUpdated_at(Timestamp.valueOf(now));
             userDetail.setUpdated_by(admin);
             userDetailRepo.save(userDetail);
@@ -225,7 +241,6 @@ public class UserService {
         saveUserRole(updatedUser.getRole(),updateUser,admin);
         Optional<Branch> userBranch = branchRepo.findById(updatedUser.getBranch());
         userBranch.ifPresent(updateUser::setBranch);
-        updateUser.setStatus(updatedUser.getStatus());
         updateUser.setUpdated_by(admin);
         updateUser.setUpdated_at(Timestamp.valueOf(now));
         updateUser.setRole(roleRepo.findById(updatedUser.getRole()).get());
@@ -233,7 +248,7 @@ public class UserService {
         return userDetailRepo.findUserDetailByUser(updateUser).get();
     }
 
-    private UserBranch createUserBranch(UsersRequest usersRequest,Users user,Users admin,LocalDateTime now){
+    private void createUserBranch(UsersRequest usersRequest, Users user, Users admin, LocalDateTime now){
         UserBranch userBranch = new UserBranch();
         userBranch.setUser(user);
         userBranch.setBranch(branchRepo.findById(usersRequest.getBranch()).orElse(null));
@@ -241,7 +256,7 @@ public class UserService {
         userBranch.setUpdated_by(admin);
         userBranch.setCreated_at(Timestamp.valueOf(now));
         userBranch.setUpdated_at(Timestamp.valueOf(now));
-        return userBranchRepo.save(userBranch);
+        userBranchRepo.save(userBranch);
     }
 
     private UserDetail saveUserDetail(UsersRequest userInfo,Users newUser,Users admin){
@@ -250,7 +265,6 @@ public class UserService {
         Date date = Date.valueOf(now.toLocalDate());
         newUserDetail.setCreated_at(Timestamp.valueOf(now));
         newUserDetail.setUpdated_at(Timestamp.valueOf(now));
-        newUserDetail.setStatus(userInfo.getStatus());
         newUserDetail.setFull_name(userInfo.getFullname());
         newUserDetail.setUser(newUser);
         newUserDetail.setStart_date(date);
@@ -258,12 +272,7 @@ public class UserService {
         newUserDetail.setCreated_by(admin);
         newUserDetail.setUpdated_by(admin);
         newUserDetail.setPhoneNumber(userInfo.getPhoneNumber());
-        if(userInfo.getStatus()!=null){
-            newUserDetail.setStatus(userInfo.getStatus());
-        }
-        else{
-            newUserDetail.setStatus("Active");
-        }
+        newUserDetail.setStatus("Inactive");
         return userDetailRepo.save(newUserDetail);
     }
     private UserRole saveUserRole(Long roleId,Users newUser,Users admin){

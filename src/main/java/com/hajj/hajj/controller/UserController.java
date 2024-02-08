@@ -64,9 +64,10 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('superadmin')")
-    @PostMapping("/unapprovedUsers/{branchName}")
+    @GetMapping("/unapprovedUsers/{branchName}")
     public Object listOfUnapprovedUser(@PathVariable String branchName,HttpServletRequest request){
-        return userService.allUnapprovedUsers(branchName);
+        Users user = getUser(request);
+        return userService.allUnapprovedUsers(branchName,user);
     }
 
     @PreAuthorize("hasRole('superadmin')")
@@ -86,7 +87,7 @@ public class UserController {
     @GetMapping("/approve/{id}")
     public Object approveUser(@PathVariable Long id,HttpServletRequest request){
         Users user = getUser(request);
-        Object resp = userService.approveUser(id);
+        Object resp = userService.approveUser(id,user);
         loggerService.createNewLog(user,request.getRequestURI(),resp.toString());
         return resp;
     }

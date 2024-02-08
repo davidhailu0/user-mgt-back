@@ -20,4 +20,10 @@ public interface UserDetailRepo extends JpaRepository<UserDetail,Long> {
 
     @Query(value = "SELECT u from UserDetail u where u.user.branch.name = :branchName")
     List<UserDetail> findUsersByBranch(@Param("branchName") String branch);
+
+    @Query(value = "SELECT u from UserDetail u where u.status = 'Inactive' and u.created_by!=:created_by")
+    List<UserDetail> findUnapprovedData(@Param("created_by")Users created_by);
+
+    @Query(value = "SELECT u from UserDetail u where u.status = 'Inactive' and u.user.branch.name= :branchName and u.created_by!=:created_by")
+    List<UserDetail> findUnapprovedDataWithBranch(@Param("branchName") String branch,@Param("created_by")Users created_by);
 }

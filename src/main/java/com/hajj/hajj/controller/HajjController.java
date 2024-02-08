@@ -128,6 +128,10 @@ public class HajjController {
     @GetMapping("/getHajjData")
     public Object getHajjData(HttpServletRequest request){
         Users user = getUser(request);
+        List<HUjjaj> hujajData;
+        if(user.getRole().getName().contains("superadmin")){
+
+        }
         List<HUjjaj> hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();

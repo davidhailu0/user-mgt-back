@@ -11,12 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UsersRepo extends JpaRepository<Users,Long> {
-  Optional<Users> findUsersByUsername(String username);
+  @Query(value = "SELECT u from Users u where u.username = :username and u.status = 'Active'")
+  Optional<Users> findUsersByUsername(@Param("username") String username);
 
-  @Query(value = "SELECT u from Users u where u.status = 'Inactive'")
-  List<Users> findUnapprovedData();
-
-  @Query(value = "SELECT u from Users u where u.status = 'Inactive' and u.branch.name= :branchName")
-  List<Users> findUnapprovedDataWithBranch(@Param("branchName") String branch);
 
 }

@@ -50,6 +50,9 @@ public class Users implements UserDetails{
     Timestamp created_at;
     Timestamp updated_at;
     String status;
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "checker_id",referencedColumnName = "id")
+    Users checker;
 
     public Users(){
 
