@@ -129,10 +129,12 @@ public class HajjController {
     public Object getHajjData(HttpServletRequest request){
         Users user = getUser(request);
         List<HUjjaj> hujajData;
-        if(user.getRole().getName().contains("superadmin")){
-
+        if(user.getRole().getName().toLowerCase().contains("superadmin")){
+            hujajData = hujjajRepo.findAll();
         }
-        List<HUjjaj> hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
+        else{
+            hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
+        }
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
         int total = hujajData.size();
