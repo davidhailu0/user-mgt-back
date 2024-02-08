@@ -62,6 +62,13 @@ public class UserController {
 //        loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(user));
         return userService.getUserById(id).get();
     }
+
+    @PreAuthorize("hasRole('superadmin')")
+    @PostMapping("/unapprovedUsers/{branchName}")
+    public Object listOfUnapprovedUser(@PathVariable String branchName,HttpServletRequest request){
+        return userService.allUnapprovedUsers(branchName);
+    }
+
     @PreAuthorize("hasRole('superadmin')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

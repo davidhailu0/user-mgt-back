@@ -65,8 +65,11 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public List<Users> allUnapprovedUsers(){
-        return userRepo.findUnapprovedData();
+    public List<Users> allUnapprovedUsers(String branchName){
+        if(branchName.equals("all")){
+            return userRepo.findUnapprovedData();
+        }
+        return userRepo.findUnapprovedDataWithBranch(branchName);
     }
 
     public List<UserDetail> getUsersByBranch(String branchName){

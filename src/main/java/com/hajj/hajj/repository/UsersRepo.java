@@ -16,4 +16,7 @@ public interface UsersRepo extends JpaRepository<Users,Long> {
   @Query(value = "SELECT u from Users u where u.status = 'Inactive'")
   List<Users> findUnapprovedData();
 
+  @Query(value = "SELECT u from Users u where u.status = 'Inactive' and u.branch.name= :branchName")
+  List<Users> findUnapprovedDataWithBranch(@Param("branchName") String branch);
+
 }
