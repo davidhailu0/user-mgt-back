@@ -104,8 +104,7 @@ public class UserService {
             userDetail = saveUserDetail(userInfo, newUser, admin);
             userRole = saveUserRole(userInfo.getRole(), newUser, admin);
             userBranch1 = createUserBranch(userInfo, newUser, admin, now);
-            generateDefaultPassword(newUser, userDetail,"Dear %s,\n" +
-                    "Hajj Payment Portal account has been successfully created. Your username is %s, and your password is %s");
+            generateDefaultPassword(newUser, userDetail,true);
         }
         catch(Exception e){
             if(newUser.getId()!=null){
@@ -146,14 +145,19 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,"Dear %s,\n" +
-                " Your password for Hajj Payment Portal account has been successfully rested. Your new password is %s.");
+        generateDefaultPassword(user,userDetail,false);
         return true;
     }
 
-    private void generateDefaultPassword(Users user,UserDetail userDetail,String messageContent){
+    private void generateDefaultPassword(Users user,UserDetail userDetail,boolean signUp){
         String rawPassword = generateRandomString(user.getUsername());
-        messageContent = String.format(messageContent,userDetail.getFull_name(),rawPassword,user.getUsername());
+        String messageContent;
+        if(signUp){
+            messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s",userDetail.getFull_name(),user.getUsername(),rawPassword);
+        }
+        else{
+            messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully rested. Your new password is %s.",userDetail.getFull_name(),rawPassword);
+        }
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);

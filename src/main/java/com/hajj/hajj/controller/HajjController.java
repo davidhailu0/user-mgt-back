@@ -135,11 +135,12 @@ public class HajjController {
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
         int total = hujajData.size();
+        int mobile = hujajData.stream().filter(HUjjaj::isFromMobile).toList().size();
         Map<String,Integer> hajjData = new HashMap<>();
         hajjData.put("total",total);
         hajjData.put("unpaid",unpaid);
         hajjData.put("paid",paid);
-        hajjData.put("mobile",0);
+        hajjData.put("mobile",mobile);
         loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
         return hajjData;
     }
