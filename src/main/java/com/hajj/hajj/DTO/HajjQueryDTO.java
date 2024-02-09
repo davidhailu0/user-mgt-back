@@ -11,4 +11,5 @@ public class HajjQueryDTO {
     String toDate;
     String branchName;
     String isFromMobile;
+    String isFundTransfered;
 }

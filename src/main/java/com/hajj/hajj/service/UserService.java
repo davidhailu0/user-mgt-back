@@ -225,9 +225,8 @@ public class UserService {
             updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             updateUser.setConfirmPassword(null);
         }
-        if(!updateUser.getRole().getId().equals(updatedUser.getRole())){
+        if(updateUser.getCreated_by().getId().equals(admin.getId())&&!updateUser.getRole().getId().equals(updatedUser.getRole())){
             updateUser.setStatus("Inactive");
-            userRepo.save(updateUser);
             UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
             if(userDetail!=null){
                 userDetailRepo.save(userDetail);

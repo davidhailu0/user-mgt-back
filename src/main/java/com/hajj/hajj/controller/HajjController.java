@@ -201,6 +201,16 @@ public class HajjController {
                     return false;
                 }
             }
+            if(hajjQueryDTO.getIsFundTransfered().equals("false")){
+                if(hj.is_fundtransfered()){
+                    return false;
+                }
+            }
+            if(hajjQueryDTO.getIsFundTransfered().equals("true")){
+                if(!hj.is_fundtransfered()){
+                    return false;
+                }
+            }
             if(trnDate!=null&&hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
                 toDate = LocalDate.parse(hajjQueryDTO.getToDate(), formatter);
                 if(trnDate.isAfter(toDate)){
