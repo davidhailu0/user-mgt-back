@@ -72,8 +72,8 @@ public class UserService {
     public Object saveUser(@NonNull UsersRequest userInfo,Users admin){
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
-        Users checkUser = userRepo.findUsersByUsername(userInfo.getUsername()).orElse(null);
-        UserDetail checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(userInfo.getPhoneNumber()).orElse(null);
+        Users checkUser = userRepo.findUsersByUsername(userInfo.getUsername().trim()).orElse(null);
+        UserDetail checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(userInfo.getPhoneNumber().trim()).orElse(null);
         if(checkUser!=null){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
@@ -87,7 +87,7 @@ public class UserService {
             return error;
         }
         userBranch.ifPresent(newUser::setBranch);
-        newUser.setUsername(userInfo.getUsername());
+        newUser.setUsername(userInfo.getUsername().trim().toLowerCase());
         newUser.setStatus(userInfo.getStatus());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
@@ -234,7 +234,7 @@ public class UserService {
         newUserDetail.setStatus_changed_on(date);
         newUserDetail.setCreated_by(admin);
         newUserDetail.setUpdated_by(admin);
-        newUserDetail.setPhoneNumber(userInfo.getPhoneNumber());
+        newUserDetail.setPhoneNumber(userInfo.getPhoneNumber().trim());
         if(userInfo.getStatus()!=null){
             newUserDetail.setStatus(userInfo.getStatus());
         }
