@@ -192,6 +192,9 @@ public class HajjController {
         allHajj = allHajj.stream().filter((hj)->{
             String pattern = "yyyy-MM-dd";
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            if(hj.getTRN_DT()==null||hj.getTRN_DT().equals("null")){
+                return true;
+            }
             LocalDate trnDate = LocalDate.parse(hj.getTRN_DT(), formatter);
             LocalDate fromDate = null;
             LocalDate toDate = null;
