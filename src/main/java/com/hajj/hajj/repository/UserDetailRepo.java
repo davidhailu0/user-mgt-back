@@ -16,14 +16,17 @@ public interface UserDetailRepo extends JpaRepository<UserDetail,Long> {
     @Query(value = "SELECT u from UserDetail u where u.user = :user")
     Optional<UserDetail> findUserDetailByUser(@Param("user") Users user);
 
-    Optional<UserDetail> findUserDetailByPhoneNumberContaining(@Param("phoneNumber") String phoneNumber);
+    List<UserDetail> findUserDetailByPhoneNumberContaining(@Param("phoneNumber") String phoneNumber);
 
-    @Query(value = "SELECT u from UserDetail u where u.user.branch.name = :branchName")
+    @Query(value = "SELECT u from UserDetail u where u.user.branch.name = :branchName and u.user.status = 'Active'")
     List<UserDetail> findUsersByBranch(@Param("branchName") String branch);
 
-    @Query(value = "SELECT u from UserDetail u where u.status = 'Inactive' and u.created_by!=:created_by")
+    @Query(value = "SELECT u from UserDetail u where u.user.status = 'Active'")
+    List<UserDetail> findUsersByStatus();
+
+    @Query(value = "SELECT u from UserDetail u where u.user.status = 'Inactive' and u.created_by!= :created_by")
     List<UserDetail> findUnapprovedData(@Param("created_by")Users created_by);
 
-    @Query(value = "SELECT u from UserDetail u where u.status = 'Inactive' and u.user.branch.name= :branchName and u.created_by!=:created_by")
+    @Query(value = "SELECT u from UserDetail u where u.user.status = 'Inactive' and u.user.branch.name= :branchName and u.created_by!=:created_by")
     List<UserDetail> findUnapprovedDataWithBranch(@Param("branchName") String branch,@Param("created_by")Users created_by);
 }

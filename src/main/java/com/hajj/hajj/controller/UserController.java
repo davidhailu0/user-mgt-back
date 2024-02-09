@@ -114,7 +114,7 @@ public class UserController {
         if(!status){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
-            error.put("error","The Username does not exist");
+            error.put("error","The User is not activated");
             loggerService.createNewLog(user,request.getRequestURI(),error.toString());
             return error;
         }

@@ -68,7 +68,7 @@ public class HajjController {
 
 //    @Scheduled(fixedRate = 1000*60*60*24)
 
-        @Scheduled(fixedRate = 1000*60*5)
+        @Scheduled(fixedRate = 1000*60*60*24)
     public void refreshToken(){
         RestTemplate restTemplate=new RestTemplate();
         HttpHeaders headers =  new HttpHeaders();
@@ -138,15 +138,24 @@ public class HajjController {
         else{
             hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
         }
+        List<Users> allUsers = usersRepo.findAll();
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
         int total = hujajData.size();
         int mobile = hujajData.stream().filter(HUjjaj::isFromMobile).toList().size();
+        int numberOfUsers = allUsers.size();
+        int numberOfSuperadmin = allUsers.stream().filter(usr->usr.getRole().getName().equals("superadmin")).toList().size();
+        int numberOfMakers = allUsers.stream().filter(usr->usr.getRole().getName().equals("maker")).toList().size();
+        int numberOfChecker = allUsers.stream().filter(usr->usr.getRole().getName().equals("checker")).toList().size();
         Map<String,Integer> hajjData = new HashMap<>();
         hajjData.put("total",total);
         hajjData.put("unpaid",unpaid);
         hajjData.put("paid",paid);
         hajjData.put("mobile",mobile);
+        hajjData.put("numberOfUsers",numberOfUsers);
+        hajjData.put("numberOfSuperadmin",numberOfSuperadmin);
+        hajjData.put("numberOfMakers",numberOfMakers);
+        hajjData.put("numberOfChecker",numberOfChecker);
         loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
         return hajjData;
     }
@@ -163,7 +172,7 @@ public class HajjController {
             return List.of();
         }
         List<HUjjaj> allHajj;
-        if(hajjQueryDTO.getBranchName()!=null&&!hajjQueryDTO.getBranchName().equals("null")){
+        if(hajjQueryDTO.getBranchName()!=null&&!hajjQueryDTO.getBranchName().equals("null")&&!hajjQueryDTO.getBranchName().equals("All")){
             allHajj = hujjajRepo.getDashboardData(hajjQueryDTO.getBranchName());
             if(hajjQueryDTO.getIsFromMobile().equals("web")
                     ||hajjQueryDTO.getIsFromMobile().equals("mobile")){

@@ -71,6 +71,9 @@ public class UserService {
     }
 
     public List<UserDetail> getUsersByBranch(String branchName){
+        if(branchName.equals("All")){
+            return userDetailRepo.findUsersByStatus();
+        }
         return userDetailRepo.findUsersByBranch(branchName);
     }
 
@@ -78,14 +81,16 @@ public class UserService {
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
         Users checkUser = userRepo.findUsersByUsername(userInfo.getUsername()).orElse(null);
-        UserDetail checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(userInfo.getPhoneNumber()).orElse(null);
+        int startIndex = userInfo.getPhoneNumber().length()-9;
+        String checkPhone = userInfo.getPhoneNumber().substring(startIndex);
+        List<UserDetail> checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhone);
         if(checkUser!=null){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
             error.put("error","This username have been taken");
             return error;
         }
-        if(checkUserDetail!=null){
+        if(checkUserDetail.size()>=1){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
             error.put("error","This phone number is used");
@@ -100,6 +105,7 @@ public class UserService {
         newUser.setUpdated_by(admin);
         newUser.setRole(roleRepo.findById(userInfo.getRole()).get());
         newUser.setStatus("Inactive");
+        newUser.setConfirmPassword("First Time");
         UserDetail userDetail = null;
         UserRole userRole = null;
         try {
@@ -149,15 +155,17 @@ public class UserService {
                 return error;
             }
             if(userDetail!=null){
-                generateDefaultPassword(user, userDetail,true);
-                Map<String,Object> success = new HashMap<>();
+                if(user.getConfirmPassword()!=null&&!user.getConfirmPassword().equals("null")&&
+                !user.getConfirmPassword().isBlank()&&!user.getConfirmPassword().isEmpty()){
+                    generateDefaultPassword(user, userDetail,true);
+                }
                 user.setStatus("Active");
                 UserDetail userDetail1 = userDetailRepo.findUserDetailByUser(user).orElse(null);
                 if(userDetail1!=null){
-                    userDetail1.setStatus("Active");
                     userDetailRepo.save(userDetail1);
                 }
                 userRepo.save(user);
+                Map<String,Object> success = new HashMap<>();
                 success.put("success",true);
                 user.setChecker(admin);
                 success.put("message","User Approved Successfully");
@@ -176,7 +184,6 @@ public class UserService {
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,false);
         generateDefaultPassword(user,userDetail,false);
         return true;
     }
@@ -200,11 +207,20 @@ public class UserService {
     public Object updateUser(Long id,UsersRequest updatedUser,Users admin){
         if(!userRepo.existsById(id)){
             Map<String,Object> error = new HashMap<>();
-            error.put("status",false);
+            error.put("success",false);
             error.put("error","This user does not exist");
             return error;
         }
         Users updateUser = userRepo.findById(id).get();
+        if(!updatedUser.getStatus().equals("Inactive")
+        &&updateUser.getStatus().equals("Inactive")&&
+        updateUser.getCreated_by().getId().equals(admin.getId())
+        ){
+            Map<String,Object> error = new HashMap<>();
+            error.put("success",false);
+            error.put("error","You can not change the status of this user");
+            return error;
+        }
         if(updatedUser.getPassword()!=null){
             updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             updateUser.setConfirmPassword(null);
@@ -214,18 +230,20 @@ public class UserService {
             userRepo.save(updateUser);
             UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
             if(userDetail!=null){
-                userDetail.setStatus("Inactive");
                 userDetailRepo.save(userDetail);
             }
+        }
+        else{
+            updateUser.setStatus(updatedUser.getStatus());
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
         LocalDateTime now = LocalDateTime.now();
         if(userDetail!=null){
             userDetail.setFull_name(updatedUser.getFullname());
-            int index = updatedUser.getPhoneNumber().startsWith("09")?2:updatedUser.getPhoneNumber().startsWith("251")?3:4;
-            String phoneNumberFormatted = updatedUser.getPhoneNumber().substring(index);
-            UserDetail checkPhone = userDetailRepo.findUserDetailByPhoneNumberContaining(phoneNumberFormatted).orElse(null);
-            if(checkPhone!=null&&!Objects.equals(checkPhone.getId(), userDetail.getId())){
+            int startIndex = updatedUser.getPhoneNumber().length()-9;
+            String checkPhoneNumber = updatedUser.getPhoneNumber().substring(startIndex);
+            List<UserDetail> checkPhone = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhoneNumber);
+            if(!checkPhone.isEmpty()&&!Objects.equals(checkPhone.get(0).getId(), userDetail.getId())){
                 Map<String,Object> error = new HashMap<>();
                 error.put("status",false);
                 error.put("error","This phone number is registered");
@@ -273,7 +291,6 @@ public class UserService {
         newUserDetail.setCreated_by(admin);
         newUserDetail.setUpdated_by(admin);
         newUserDetail.setPhoneNumber(userInfo.getPhoneNumber());
-        newUserDetail.setStatus("Inactive");
         return userDetailRepo.save(newUserDetail);
     }
     private UserRole saveUserRole(Long roleId,Users newUser,Users admin){
