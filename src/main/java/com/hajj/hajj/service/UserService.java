@@ -81,9 +81,9 @@ public class UserService {
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
         Users checkUser = userRepo.findUsersByUsername(userInfo.getUsername()).orElse(null);
-        int startIndex = userInfo.getPhoneNumber().length()-9;
-        String checkPhone = userInfo.getPhoneNumber().substring(startIndex);
-        List<UserDetail> checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhone);
+        int startIndex = userInfo.getPhoneNumber().trim().length()-9;
+        String checkPhone = userInfo.getPhoneNumber().trim().substring(startIndex);
+        List<UserDetail> checkUserDetail = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhone.trim());
         if(checkUser!=null){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
@@ -97,7 +97,7 @@ public class UserService {
             return error;
         }
         userBranch.ifPresent(newUser::setBranch);
-        newUser.setUsername(userInfo.getUsername());
+        newUser.setUsername(userInfo.getUsername().trim());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
         newUser.setUpdated_at(Timestamp.valueOf(now));
@@ -264,7 +264,9 @@ public class UserService {
         updateUser.setUpdated_at(Timestamp.valueOf(now));
         updateUser.setRole(roleRepo.findById(updatedUser.getRole()).get());
         userRepo.save(updateUser);
-        return userDetailRepo.findUserDetailByUser(updateUser).get();
+        Map<String,Object> success = new HashMap();
+        success.put("success",true);
+        return success;
     }
 
     private void createUserBranch(UsersRequest usersRequest, Users user, Users admin, LocalDateTime now){
@@ -284,7 +286,7 @@ public class UserService {
         Date date = Date.valueOf(now.toLocalDate());
         newUserDetail.setCreated_at(Timestamp.valueOf(now));
         newUserDetail.setUpdated_at(Timestamp.valueOf(now));
-        newUserDetail.setFull_name(userInfo.getFullname());
+        newUserDetail.setFull_name(userInfo.getFullname().trim());
         newUserDetail.setUser(newUser);
         newUserDetail.setStart_date(date);
         newUserDetail.setStatus_changed_on(date);
@@ -308,7 +310,7 @@ public class UserService {
     }
 
     public static String generateRandomString(String username) {
-        String randomString = username.substring(0,2);
+        String randomString = username.substring(0,2).toLowerCase();
         SecureRandom random = new SecureRandom();
         for (int i = 0; i < PASSWORDLENGTH; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());

@@ -192,19 +192,16 @@ public class HajjController {
         allHajj = allHajj.stream().filter((hj)->{
             String pattern = "yyyy-MM-dd";
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
-            if(hj.getTRN_DT()==null||hj.getTRN_DT().equals("null")){
-                return true;
-            }
-            LocalDate trnDate = LocalDate.parse(hj.getTRN_DT(), formatter);
+            LocalDate trnDate = hj.getTRN_DT()==null||hj.getTRN_DT().equals("null")?null:LocalDate.parse(hj.getTRN_DT(), formatter);
             LocalDate fromDate = null;
             LocalDate toDate = null;
-            if(hajjQueryDTO.getFromDate()!=null&&!hajjQueryDTO.getFromDate().equals("null")&& !hajjQueryDTO.getFromDate().isEmpty()){
+            if(trnDate!=null&&hajjQueryDTO.getFromDate()!=null&&!hajjQueryDTO.getFromDate().equals("null")&& !hajjQueryDTO.getFromDate().isEmpty()){
                 fromDate = LocalDate.parse(hajjQueryDTO.getFromDate(), formatter);
                 if(trnDate.isBefore(fromDate)){
                     return false;
                 }
             }
-            if(hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
+            if(trnDate!=null&&hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
                 toDate = LocalDate.parse(hajjQueryDTO.getToDate(), formatter);
                 if(trnDate.isAfter(toDate)){
                     return false;

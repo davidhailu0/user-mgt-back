@@ -63,7 +63,7 @@ public class AuthController {
     public Object loginHandler(@RequestBody LoginCredential body, HttpServletResponse resp){
         try {
             UsernamePasswordAuthenticationToken authInputToken =
-                    new UsernamePasswordAuthenticationToken(body.getUsername(), body.getPassword());
+                    new UsernamePasswordAuthenticationToken(body.getUsername().trim().toLowerCase(), body.getPassword());
             authenticationManager.authenticate(authInputToken);
             String token = util.generateToken(body.getUsername());
             LoginResponse response = new LoginResponse();
@@ -74,7 +74,7 @@ public class AuthController {
         }catch (AuthenticationException authExc){
             Map<String, Object> error = new HashMap<>();
             error.put("status", "failed");
-            error.put("message", "Invalid Username or Password");
+            error.put("message", "Invalid Username or Password or You are not approved");
             resp.setStatus(403);
             return error;
         }
