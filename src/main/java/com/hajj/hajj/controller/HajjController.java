@@ -10,7 +10,6 @@ import com.hajj.hajj.model.UserRole;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.HujjajRepo;
 import com.hajj.hajj.repository.UserDetailRepo;
-import com.hajj.hajj.repository.UserRoleRepo;
 import com.hajj.hajj.repository.UsersRepo;
 import com.hajj.hajj.service.LoggerService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +19,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -139,6 +138,10 @@ public class HajjController {
             hujajData = hujjajRepo.getDashboardData(user.getBranch().getName());
         }
         List<Users> allUsers = usersRepo.findAll();
+        double amount = 0;
+        for(HUjjaj hj:hujajData){
+            amount += Double.parseDouble(hj.getAmount());
+        }
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
         int total = hujajData.size();
@@ -147,7 +150,8 @@ public class HajjController {
         int numberOfSuperadmin = allUsers.stream().filter(usr->usr.getRole().getName().equals("superadmin")).toList().size();
         int numberOfMakers = allUsers.stream().filter(usr->usr.getRole().getName().equals("maker")).toList().size();
         int numberOfChecker = allUsers.stream().filter(usr->usr.getRole().getName().equals("checker")).toList().size();
-        Map<String,Integer> hajjData = new HashMap<>();
+        Map<String,Object> hajjData = new HashMap<>();
+        hajjData.put("amount",amount);
         hajjData.put("total",total);
         hajjData.put("unpaid",unpaid);
         hajjData.put("paid",paid);
@@ -168,7 +172,7 @@ public class HajjController {
 
     @PostMapping("/filteredHajjReport")
     public List<HUjjaj> filteredData(@RequestBody HajjQueryDTO hajjQueryDTO){
-        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null&&hajjQueryDTO.getIsFromMobile()==null){
+        if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null&&hajjQueryDTO.getIsFromMobile()==null&& (hajjQueryDTO.getIsFundTransfered()==null||hajjQueryDTO.getIsFundTransfered().equalsIgnoreCase("null")||hajjQueryDTO.getIsFundTransfered().equalsIgnoreCase("all"))){
             return List.of();
         }
         List<HUjjaj> allHajj;
@@ -429,6 +433,8 @@ public class HajjController {
         loggerService.createNewLog(user,request.getRequestURI(),success.toString());
         return success;
     }
+
+    @Transactional
     @PreAuthorize("hasAnyRole('maker')")
     @PostMapping("/make_hajj_trans")
     public Object make_hujaj_transaction(@RequestBody HUjjaj hujaj,HttpServletRequest request)
@@ -528,6 +534,7 @@ public class HajjController {
         return error;
     }
 
+    @Transactional
     @PreAuthorize("hasAnyRole('checker')")
     @PostMapping("/Check_hajj_trans/mobile")
     public  Object CHECK_hujaj_transaction_mobile(@RequestBody HUjjaj hUjjaj, HttpServletRequest request){
@@ -568,6 +575,8 @@ public class HajjController {
         return error;
 
     }
+
+    @Transactional
     @PreAuthorize("hasAnyRole('checker')")
     @PostMapping("/Check_hajj_trans")
     public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj, HttpServletRequest request)

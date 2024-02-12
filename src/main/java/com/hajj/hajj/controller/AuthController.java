@@ -43,14 +43,6 @@ import com.hajj.hajj.repository.UsersRepo;
 @RequestMapping("api/auth")
 public class AuthController {
 
-//    @Value("${react.login}")
-//    String redirectPage;
-
-//    @Value("${react.dashboard}")
-//    String dashboard;
-//    @Autowired
-//    LoggerService loggerService;
-
     @Autowired JWTUtil util;
     @Autowired UsersRepo usersRepo;
 
@@ -68,13 +60,27 @@ public class AuthController {
             String token = util.generateToken(body.getUsername());
             LoginResponse response = new LoginResponse();
             Users user = usersRepo.findUsersByUsername(body.getUsername()).get();
+            if(user.isLocked()){
+                Map<String, Object> error = new HashMap<>();
+                error.put("status", "failed");
+                error.put("message", "Your Account is locked.");
+                resp.setStatus(403);
+                return error;
+            }
+            if(user.getStatus().equals("Inactive")){
+                Map<String, Object> error = new HashMap<>();
+                error.put("status", "failed");
+                error.put("message", "You are not approved. Please Contact IT Support");
+                 resp.setStatus(403);
+                return error;
+            }
             response.setUser(user);
             response.setToken(token);
             return response;
         }catch (AuthenticationException authExc){
             Map<String, Object> error = new HashMap<>();
             error.put("status", "failed");
-            error.put("message", "Invalid Username or Password or You are not approved");
+            error.put("message", "Invalid Username or Password");
             resp.setStatus(403);
             return error;
         }
@@ -100,8 +106,5 @@ public class AuthController {
         //loggerService.createNewLog(user,request.getRequestURI(), gson.toJson(user));
         return user;
     }
-//    @RequestMapping(value="/dashboard")
-//    public ModelAndView dashboard(){
-//        return new ModelAndView("redirect:"+dashboard);
-//    }
+
 }

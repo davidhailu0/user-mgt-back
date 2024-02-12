@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
@@ -26,6 +27,11 @@ public class UserService {
     @Autowired
     UsersRepo userRepo;
 
+    @Autowired
+    UserUpdateRepo userUpdateRepo;
+
+    @Autowired
+    UserResetPasswordRepo userResetPasswordRepo;
 
     @Autowired
     UserDetailRepo userDetailRepo;
@@ -63,20 +69,22 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public List<UserDetail> allUnapprovedUsers(String branchName,Users admin){
+    public List<UserDetail> allUnapprovedUsers(String branchName){
         if(branchName.equals("All")){
-            return userDetailRepo.findUnapprovedData(admin);
+            return userDetailRepo.findUnapprovedData();
         }
-        return userDetailRepo.findUnapprovedDataWithBranch(branchName,admin);
+        return userDetailRepo.findUnapprovedDataWithBranch(branchName);
     }
 
     public List<UserDetail> getUsersByBranch(String branchName){
         if(branchName.equals("All")){
-            return userDetailRepo.findUsersByStatus();
+            return userDetailRepo.findAll();
         }
         return userDetailRepo.findUsersByBranch(branchName);
     }
 
+
+    @Transactional
     public Object saveUser(@NonNull UsersRequest userInfo,Users admin){
         Users newUser = new Users();
         Optional<Branch> userBranch = branchRepo.findById(userInfo.getBranch());
@@ -90,7 +98,7 @@ public class UserService {
             error.put("error","This username have been taken");
             return error;
         }
-        if(checkUserDetail.size()>=1){
+        if(!checkUserDetail.isEmpty()){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);
             error.put("error","This phone number is used");
@@ -104,26 +112,28 @@ public class UserService {
         newUser.setCreated_by(admin);
         newUser.setUpdated_by(admin);
         newUser.setRole(roleRepo.findById(userInfo.getRole()).get());
+        newUser.setLocked(false);
         newUser.setStatus("Inactive");
         newUser.setConfirmPassword("First Time");
-        UserDetail userDetail = null;
-        UserRole userRole = null;
         try {
             newUser = userRepo.saveAndFlush(newUser);
-            userDetail = saveUserDetail(userInfo, newUser, admin);
-            userRole = saveUserRole(userInfo.getRole(), newUser, admin);
+            saveUserDetail(userInfo, newUser, admin);
+            saveUserRole(userInfo.getRole(), newUser, admin);
             createUserBranch(userInfo, newUser, admin, now);
+            UserUpdate userUpdate = new UserUpdate();
+            userUpdate.setUser(newUser);
+            userUpdate.setNewName(userInfo.getFullname());
+            userUpdate.setNewPhoneNumber(userInfo.getPhoneNumber());
+            userUpdate.setNewRole(roleRepo.findById(userInfo.getRole()).orElse(null));
+            userUpdate.setNewBranch(branchRepo.findById(userInfo.getBranch()).orElse(null));
+            userUpdate.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+            userUpdate.setCreated_by(admin);
+            userUpdate.setNewAccountLockStatus(false);
+            userUpdate.setNewStatus("Inactive");
+            userUpdateRepo.save(userUpdate);
         }
         catch(Exception e){
-            if(newUser.getId()!=null){
-                userRepo.delete(newUser);
-            }
-            if(userDetail!=null) {
-                userDetailRepo.delete(userDetail);
-            }
-            if(userRole!=null){
-                userRoleRepo.delete(userRole);
-            }
+            throw new RuntimeException("Creating User Failed");
         }
         return newUser;
     }
@@ -157,17 +167,24 @@ public class UserService {
             if(userDetail!=null){
                 if(user.getConfirmPassword()!=null&&!user.getConfirmPassword().equals("null")&&
                 !user.getConfirmPassword().isBlank()&&!user.getConfirmPassword().isEmpty()){
-                    generateDefaultPassword(user, userDetail,true);
+                    generateDefaultPassword(user, userDetail,true,admin);
                 }
                 user.setStatus("Active");
                 UserDetail userDetail1 = userDetailRepo.findUserDetailByUser(user).orElse(null);
                 if(userDetail1!=null){
+                    userDetail1.setChecker(admin);
                     userDetailRepo.save(userDetail1);
                 }
                 userRepo.save(user);
                 Map<String,Object> success = new HashMap<>();
+                UserUpdate userUpdate = new UserUpdate();
+                userUpdate.setUser(user);
+                userUpdate.setPreviousStatus("Inactive");
+                userUpdate.setNewStatus("Active");
+                userUpdate.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+                userUpdate.setCreated_by(admin);
+                userUpdateRepo.save(userUpdate);
                 success.put("success",true);
-                user.setChecker(admin);
                 success.put("message","User Approved Successfully");
                 return success;
             }
@@ -178,29 +195,35 @@ public class UserService {
         return error;
     }
 
-    public boolean resetPassword(String username){
+    public boolean resetPassword(String username,Users admin){
         Users user = userRepo.findUsersByUsername(username).orElse(null);
         if(user==null){
             return false;
         }
         UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,false);
+        generateDefaultPassword(user,userDetail,false,admin);
         return true;
     }
 
-    private void generateDefaultPassword(Users user,UserDetail userDetail,boolean fromSignUp){
+    private void generateDefaultPassword(Users user,UserDetail userDetail,boolean fromSignUp,Users admin){
         String rawPassword = generateRandomString(user.getUsername());
         String messageContent;
         if(fromSignUp){
             messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s.",userDetail.getFull_name(),user.getUsername(),rawPassword);
         }
         else{
+            UserResetPassword newResetPassword = new UserResetPassword();
+            newResetPassword.setReset_user(user);
+            newResetPassword.setMaker(admin);
+            newResetPassword.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+            newResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+            userResetPasswordRepo.save(newResetPassword);
             messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully reset. Your new password is %s.",userDetail.getFull_name(),rawPassword);
         }
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);
-        messageService.saveMessage(userDetail.getPhoneNumber(),messageContent);
+        messageService.saveMessage(userDetail,messageContent,admin);
         userRepo.save(user);
     }
 
@@ -212,47 +235,30 @@ public class UserService {
             return error;
         }
         Users updateUser = userRepo.findById(id).get();
-        if(!updatedUser.getStatus().equals("Inactive")
-        &&updateUser.getStatus().equals("Inactive")&&
-        updateUser.getCreated_by().getId().equals(admin.getId())
-        ){
-            Map<String,Object> error = new HashMap<>();
-            error.put("success",false);
-            error.put("error","You can not change the status of this user");
-            return error;
-        }
+        UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
         if(updatedUser.getPassword()!=null){
             updateUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             updateUser.setConfirmPassword(null);
         }
-        if(updateUser.getCreated_by().getId().equals(admin.getId())&&!updateUser.getRole().getId().equals(updatedUser.getRole())){
-            updateUser.setStatus("Inactive");
-            UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
-            if(userDetail!=null){
-                userDetailRepo.save(userDetail);
-            }
-        }
-        else{
-            updateUser.setStatus(updatedUser.getStatus());
-        }
-        UserDetail userDetail = userDetailRepo.findUserDetailByUser(updateUser).orElse(null);
+        // if(updateUser.getCreated_by().getId().equals(admin.getId())&&!updateUser.getRole().getId().equals(updatedUser.getRole())){
+        //     updateUser.setStatus("Inactive");
+        // }
         LocalDateTime now = LocalDateTime.now();
-        if(userDetail!=null){
-            userDetail.setFull_name(updatedUser.getFullname());
-            int startIndex = updatedUser.getPhoneNumber().length()-9;
-            String checkPhoneNumber = updatedUser.getPhoneNumber().substring(startIndex);
-            List<UserDetail> checkPhone = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhoneNumber);
-            if(!checkPhone.isEmpty()&&!Objects.equals(checkPhone.get(0).getId(), userDetail.getId())){
-                Map<String,Object> error = new HashMap<>();
-                error.put("status",false);
-                error.put("error","This phone number is registered");
-                return error;
-            }
-            userDetail.setPhoneNumber(updatedUser.getPhoneNumber());
-            userDetail.setUpdated_at(Timestamp.valueOf(now));
-            userDetail.setUpdated_by(admin);
-            userDetailRepo.save(userDetail);
+        int startIndex = updatedUser.getPhoneNumber().length()-9;
+        String checkPhoneNumber = updatedUser.getPhoneNumber().substring(startIndex);
+        List<UserDetail> checkPhone = userDetailRepo.findUserDetailByPhoneNumberContaining(checkPhoneNumber);
+        if(!checkPhone.isEmpty()&&!Objects.equals(checkPhone.get(0).getId(), userDetail.getId())){
+            Map<String,Object> error = new HashMap<>();
+            error.put("status",false);
+            error.put("error","This phone number is registered");
+            return error;
         }
+        updateUserUpdate(userDetail, updatedUser, admin);
+        userDetail.setFull_name(updatedUser.getFullname());
+        userDetail.setPhoneNumber(updatedUser.getPhoneNumber());
+        userDetail.setUpdated_at(Timestamp.valueOf(now));
+        userDetail.setUpdated_by(admin);
+        userDetailRepo.save(userDetail);
         if(!Objects.equals(updateUser.getBranch().getId(), updatedUser.getBranch())){
             createUserBranch(updatedUser,updateUser,admin,now);
         }
@@ -260,10 +266,11 @@ public class UserService {
         Optional<Branch> userBranch = branchRepo.findById(updatedUser.getBranch());
         userBranch.ifPresent(updateUser::setBranch);
         updateUser.setUpdated_by(admin);
+        updateUser.setLocked(updatedUser.isAccountLocked());
         updateUser.setUpdated_at(Timestamp.valueOf(now));
         updateUser.setRole(roleRepo.findById(updatedUser.getRole()).get());
         userRepo.save(updateUser);
-        Map<String,Object> success = new HashMap();
+        Map<String,Object> success = new HashMap<>();
         success.put("success",true);
         return success;
     }
@@ -279,7 +286,7 @@ public class UserService {
         userBranchRepo.save(userBranch);
     }
 
-    private UserDetail saveUserDetail(UsersRequest userInfo,Users newUser,Users admin){
+    private void saveUserDetail(UsersRequest userInfo, Users newUser, Users admin){
         UserDetail newUserDetail = new UserDetail();
         LocalDateTime now = LocalDateTime.now();
         Date date = Date.valueOf(now.toLocalDate());
@@ -292,9 +299,9 @@ public class UserService {
         newUserDetail.setCreated_by(admin);
         newUserDetail.setUpdated_by(admin);
         newUserDetail.setPhoneNumber(userInfo.getPhoneNumber());
-        return userDetailRepo.save(newUserDetail);
+        userDetailRepo.save(newUserDetail);
     }
-    private UserRole saveUserRole(Long roleId,Users newUser,Users admin){
+    private void saveUserRole(Long roleId, Users newUser, Users admin){
         UserRole userRole = new UserRole();
         Optional<Role> assignedRole = roleRepo.findById(roleId);
         assignedRole.ifPresent(userRole::setRole);
@@ -305,17 +312,45 @@ public class UserService {
         userRole.setUpdated_at(Timestamp.valueOf(now));
         userRole.setStatus("Active");
         userRole.setUser(newUser);
-        return userRoleRepo.save(userRole);
+        userRoleRepo.save(userRole);
     }
 
     public static String generateRandomString(String username) {
-        String randomString = username.substring(0,2).toLowerCase();
+        StringBuilder randomString = new StringBuilder(username.substring(0, 2).toLowerCase());
         SecureRandom random = new SecureRandom();
         for (int i = 0; i < PASSWORDLENGTH; i++) {
             int randomIndex = random.nextInt(CHARACTERS.length());
             char randomChar = CHARACTERS.charAt(randomIndex);
-            randomString = randomString+randomChar;
+            randomString.append(randomChar);
         }
-        return randomString;
+        return randomString.toString();
+    }
+
+    public void updateUserUpdate(UserDetail userDetail,UsersRequest updatedUser,Users admin){
+        UserUpdate userUpdate = new UserUpdate();
+        userUpdate.setUser(userDetail.getUser());
+        userUpdate.setCreated_by(admin);
+        if(!userDetail.getFull_name().equals(updatedUser.getFullname())){
+            userUpdate.setPreviousName(userDetail.getFull_name());
+            userUpdate.setNewName(updatedUser.getFullname());
+        }
+        if(!userDetail.getPhoneNumber().equals(updatedUser.getPhoneNumber())){
+            userUpdate.setPreviousPhoneNumber(userDetail.getPhoneNumber());
+            userUpdate.setNewName(updatedUser.getFullname());
+        }
+        if(!userDetail.getUser().getBranch().getId().equals(updatedUser.getBranch())){
+            userUpdate.setPreviousBranch(userDetail.getUser().getBranch());
+            userUpdate.setNewBranch(branchRepo.findById(updatedUser.getBranch()).orElse(null));
+        }
+        if(!userDetail.getUser().getRole().getId().equals(updatedUser.getRole())){
+            userUpdate.setPreviousRole(userDetail.getUser().getRole());
+            userUpdate.setNewRole(roleRepo.findById(updatedUser.getRole()).orElse(null));
+        }
+        if(userDetail.getUser().isLocked()!=updatedUser.isAccountLocked()){
+            userUpdate.setPreviousAccountLockStatus(userDetail.getUser().isLocked());
+            userUpdate.setNewAccountLockStatus(updatedUser.isAccountLocked());
+        }
+        userUpdate.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+        userUpdateRepo.save(userUpdate);
     }
 }

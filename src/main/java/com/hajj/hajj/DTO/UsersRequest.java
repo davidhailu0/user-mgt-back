@@ -17,18 +17,18 @@ public class UsersRequest{
     String password;
     Long branch;
     Long role;
-    String status;
+    boolean accountLocked;
 
     public UsersRequest(){
 
     }
 
-    public UsersRequest(String username, String fullname,String phoneNumber,String salt, String password, Long branch, Long created_by, Long role,Long updated_by, String status) {
+    public UsersRequest(String username, String fullname,String phoneNumber,Long branch, Long role, boolean accountLocked) {
         this.username = username;
         this.fullname = fullname;
         this.phoneNumber = phoneNumber;
         this.branch = branch;
         this.role = role;
-        this.status = status;
+        this.accountLocked = accountLocked;
     }
 }

@@ -67,7 +67,7 @@ public class UserController {
     @GetMapping("/unapprovedUsers/{branchName}")
     public Object listOfUnapprovedUser(@PathVariable String branchName,HttpServletRequest request){
         Users user = getUser(request);
-        return userService.allUnapprovedUsers(branchName,user);
+        return userService.allUnapprovedUsers(branchName);
     }
 
     @PreAuthorize("hasRole('superadmin')")
@@ -110,7 +110,7 @@ public class UserController {
     @PutMapping("/resetPassword/{username}")
     public Object resetPassword(@PathVariable String username,HttpServletRequest request){
         Users user = getUser(request);
-        boolean status = userService.resetPassword(username);
+        boolean status = userService.resetPassword(username,user);
         if(!status){
             Map<String,Object> error = new HashMap<>();
             error.put("status",false);

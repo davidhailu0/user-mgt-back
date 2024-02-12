@@ -1,10 +1,13 @@
 package com.hajj.hajj.model;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,8 +25,6 @@ import lombok.Setter;
 @Setter
 public class Users implements UserDetails{
     @Id
-    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    // @SequenceGenerator(sequenceName = "user_seq", allocationSize = 1, name = "user_seq")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(unique = true)
@@ -40,19 +41,17 @@ public class Users implements UserDetails{
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
     @JsonProperty(access = Access.WRITE_ONLY)
-    @JsonIgnore
     Users created_by;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
     @JsonProperty(access = Access.WRITE_ONLY)
-    @JsonIgnore
     Users updated_by;
     Timestamp created_at;
     Timestamp updated_at;
     String status;
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "checker_id",referencedColumnName = "id")
-    Users checker;
+    boolean locked;
+
+
 
     public Users(){
 

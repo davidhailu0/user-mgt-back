@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -15,8 +16,6 @@ import lombok.Setter;
 @Setter
 public class UserDetail{
     @Id
-    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userdetail_seq")
-    // @SequenceGenerator(sequenceName = "userdetail_seq", allocationSize = 1, name = "userdetail_seq")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     Date start_date;
@@ -27,16 +26,17 @@ public class UserDetail{
     @NotBlank String full_name;
     @Column(unique = true)
     String phoneNumber;
+    @JsonManagedReference
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "created_by_id",referencedColumnName = "id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonIgnore
     Users created_by;
+    @JsonManagedReference
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "updated_by_id",referencedColumnName = "id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonIgnore
     Users updated_by;
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "checker_id",referencedColumnName = "id")
+    Users checker;
     Timestamp created_at;
     Timestamp updated_at;
     String status;
