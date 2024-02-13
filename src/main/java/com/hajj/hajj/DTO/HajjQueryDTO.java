@@ -12,4 +12,5 @@ public class HajjQueryDTO {
     String branchName;
     String isFromMobile;
     String isFundTransfered;
+    String isPaid;
 }

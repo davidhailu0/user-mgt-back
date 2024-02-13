@@ -40,7 +40,7 @@ public class MessageService {
 
     @Scheduled(fixedRate = 20000)
     public void SendMessage(){
-        List<Message> unsentMessage = messageRepo.findUnsentMessages();
+        List<Message> unsentMessage = messageRepo.findMessagesToBeSent();
         for(Message msg:unsentMessage){
             if(msg.getReceiver()!=null){
                 sendGetRequest(msg);

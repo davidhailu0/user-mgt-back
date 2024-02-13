@@ -199,6 +199,16 @@ public class HajjController {
             LocalDate trnDate = hj.getTRN_DT()==null||hj.getTRN_DT().equals("null")?null:LocalDate.parse(hj.getTRN_DT(), formatter);
             LocalDate fromDate = null;
             LocalDate toDate = null;
+            if(hajjQueryDTO.getStatus().equals("paid")){
+                if(trnDate==null){
+                    return false;
+                }
+            }
+            if(hajjQueryDTO.getStatus().equals("unpaid")){
+                if(trnDate!=null){
+                    return false;
+                }
+            }
             if(trnDate!=null&&hajjQueryDTO.getFromDate()!=null&&!hajjQueryDTO.getFromDate().equals("null")&& !hajjQueryDTO.getFromDate().isEmpty()){
                 fromDate = LocalDate.parse(hajjQueryDTO.getFromDate(), formatter);
                 if(trnDate.isBefore(fromDate)){
@@ -215,19 +225,19 @@ public class HajjController {
                     return false;
                 }
             }
-            if(trnDate!=null&&hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
-                toDate = LocalDate.parse(hajjQueryDTO.getToDate(), formatter);
-                if(trnDate.isAfter(toDate)){
+            if(hajjQueryDTO.getIsPaid().equals("false")){
+                if(hj.isPaid()){
                     return false;
                 }
             }
-            if(hajjQueryDTO.getStatus().equals("paid")){
+            if(hajjQueryDTO.getIsPaid().equals("true")){
                 if(!hj.isPaid()){
                     return false;
                 }
             }
-            else if(hajjQueryDTO.getStatus().equals("unpaid")){
-                if(hj.isPaid()){
+            if(trnDate!=null&&hajjQueryDTO.getToDate()!=null&& !hajjQueryDTO.getToDate().equals("null")&&!hajjQueryDTO.getToDate().isEmpty()){
+                toDate = LocalDate.parse(hajjQueryDTO.getToDate(), formatter);
+                if(trnDate.isAfter(toDate)){
                     return false;
                 }
             }
