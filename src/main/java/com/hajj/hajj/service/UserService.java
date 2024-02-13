@@ -212,18 +212,21 @@ public class UserService {
             messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s.",userDetail.getFull_name(),user.getUsername(),rawPassword);
         }
         else{
-            UserResetPassword newResetPassword = new UserResetPassword();
-            newResetPassword.setReset_user(user);
-            newResetPassword.setMaker(admin);
-            newResetPassword.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
-            newResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-            userResetPasswordRepo.save(newResetPassword);
             messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully reset. Your new password is %s.",userDetail.getFull_name(),rawPassword);
         }
         String password = passwordEncoder.encode(rawPassword);
         user.setPassword(password);
         user.setConfirmPassword(password);
-        messageService.saveMessage(userDetail,messageContent,admin);
+        Message messageId = messageService.saveMessage(userDetail,messageContent,admin);
+        if(!fromSignUp){
+            UserResetPassword newResetPassword = new UserResetPassword();
+            newResetPassword.setReset_user(user);
+            newResetPassword.setMaker(admin);
+            newResetPassword.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+            newResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+            newResetPassword.setMessage(messageId);
+            userResetPasswordRepo.save(newResetPassword);
+        }
         userRepo.save(user);
     }
 

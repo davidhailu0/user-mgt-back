@@ -13,6 +13,8 @@ public class UserResetPassword {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+    @OneToOne
+    Message message;
     @ManyToOne
     Users reset_user;
     @ManyToOne

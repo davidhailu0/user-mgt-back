@@ -52,34 +52,34 @@ public class MessageService {
         return messageRepo.findUnsentMessages();
     }
 
-    public void saveMessage(UserDetail userDetail, String content,Users admin){
+    public Message saveMessage(UserDetail userDetail, String content,Users admin){
         Message newMessage = new Message();
         newMessage.setSender(sender);
         newMessage.setReceiver(userDetail);
         newMessage.setContent(content);
         newMessage.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
         newMessage.setCreatedBy(admin);
-        messageRepo.save(newMessage);
+        return messageRepo.save(newMessage);
     }
 
     public Object approveMessage(Long id,Users admin){
         Message message = messageRepo.findById(id).orElse(null);
         if(message!=null){
-            message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-            message.setCheckedBy(admin);
-            messageRepo.save(message);
             if(message.getCreatedBy().getId().equals(admin.getId())){
                 Map<String,Object> error = new HashMap<>();
                 error.put("success",false);
                 error.put("error","You can not approve this password reset");
                 return error;
             }
-            UserResetPassword userResetPassword = userResetPasswordRepo.findUserResetDetailByUser(message.getReceiver().getUser()).orElse(null);
+            UserResetPassword userResetPassword = userResetPasswordRepo.findUserResetDetailByMessage(message).orElse(null);
             if(userResetPassword!=null){
                 userResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
                 userResetPassword.setChecker(admin);
                 userResetPasswordRepo.save(userResetPassword);
             }
+            message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+            message.setCheckedBy(admin);
+            messageRepo.save(message);
             Map<String,Object> success = new HashMap<>();
             success.put("success",true);
             success.put("message","You have successfully approved the reset password");
