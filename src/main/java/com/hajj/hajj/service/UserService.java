@@ -105,7 +105,7 @@ public class UserService {
             return error;
         }
         userBranch.ifPresent(newUser::setBranch);
-        newUser.setUsername(userInfo.getUsername().trim());
+        newUser.setUsername(userInfo.getUsername().trim().toLowerCase());
         LocalDateTime now = LocalDateTime.now();
         newUser.setCreated_at(Timestamp.valueOf(now));
         newUser.setUpdated_at(Timestamp.valueOf(now));
