@@ -59,13 +59,9 @@ public class HUjjaj {
     String AUTH_TIMESTAMP;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Maker_Id",referencedColumnName = "id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonIgnore
     Users Maker_Id ;
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "Checker_Id",referencedColumnName = "id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonIgnore
     Users Checker_Id;
 
     Timestamp created_at;

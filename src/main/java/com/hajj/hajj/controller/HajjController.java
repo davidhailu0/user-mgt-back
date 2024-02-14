@@ -157,7 +157,7 @@ public class HajjController {
         hajjData.put("numberOfSuperadmin",numberOfSuperadmin);
         hajjData.put("numberOfMakers",numberOfMakers);
         hajjData.put("numberOfChecker",numberOfChecker);
-        loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
+        //loggerService.createNewLog(user,request.getRequestURI(),hajjData.toString());
         return hajjData;
     }
 
@@ -241,7 +241,7 @@ public class HajjController {
             }
             return true;
         }).toList();
-        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(allHajj));
+        //loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(allHajj));
         return allHajj;
     }
 
@@ -295,14 +295,14 @@ public class HajjController {
     @GetMapping("/hajjList")
     public List<HUjjaj> getAllList(HttpServletRequest request){
         Users user = getUser(request);
-        loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findAll()));
+        //loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findAll()));
         return hujjajRepo.findAll();
     }
 
     @GetMapping("/hajjList/paid")
     public List<HUjjaj> getAllPaid(HttpServletRequest request){
         Users user = getUser(request);
-        loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName())));
+        //loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName())));
         List<HUjjaj> paidList = hujjajRepo.findHUjjajByPaidStatus(true,user.getBranch().getName());
         if(user.getRole().getName().toLowerCase().contains("maker")){
             return paidList.stream().filter(hj-> Objects.equals(hj.getMaker_Id().getId(), user.getId())).collect(Collectors.toList());
@@ -313,7 +313,7 @@ public class HajjController {
     @GetMapping("/hajjList/unpaid")
     public List<HUjjaj> getAllUnpaid(HttpServletRequest request){
         Users user = getUser(request);
-        loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(false,user.getBranch().getName())));
+        //loggerService.createNewLog(user,request.getRequestURI(),convertToStringValues(hujjajRepo.findHUjjajByPaidStatus(false,user.getBranch().getName())));
         return hujjajRepo.findHUjjajByPaidStatus(false,user.getBranch().getName());
     }
 
@@ -391,7 +391,7 @@ public class HajjController {
             return hj;
         }
         hj = hujjajRepo.getCheckedHujjajList(user.getBranch().getName());
-        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(hj));
+        //loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(hj));
         return hj;
     }
 

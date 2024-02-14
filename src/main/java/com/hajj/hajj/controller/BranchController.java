@@ -44,7 +44,7 @@ public class BranchController{
     @GetMapping
     public List<Branch> getAllBranches(HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
-        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.getAllBranches()));
+        //loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.getAllBranches()));
         return branchService.getAllBranches();
     }
 
