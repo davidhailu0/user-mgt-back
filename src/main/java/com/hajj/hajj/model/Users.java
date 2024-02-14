@@ -51,6 +51,7 @@ public class Users implements UserDetails{
     Timestamp created_at;
     Timestamp updated_at;
     String status;
+    Long lockedTimes;
     boolean locked;
 
 
