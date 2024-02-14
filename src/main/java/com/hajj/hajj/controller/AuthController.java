@@ -55,10 +55,10 @@ public class AuthController {
         if(user!=null){
             user.setLocked(true);
             if(user.getLockedTimes()==null){
-                user.setLockedTimes(1);
+                user.setLockedTimes(1L);
             }
             else{
-                user.setLockedTimes(user.getLockedTimes()+1);
+                user.setLockedTimes(user.getLockedTimes()+1L);
             }
             usersRepo.save(user);
             Map<String, Object> success = new HashMap<>();
