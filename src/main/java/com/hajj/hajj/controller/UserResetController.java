@@ -1,10 +1,10 @@
 package com.hajj.hajj.controller;
 
 import com.hajj.hajj.config.JWTUtil;
-import com.hajj.hajj.model.Message;
+import com.hajj.hajj.model.UserResetPassword;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UsersRepo;
-import com.hajj.hajj.service.MessageService;
+import com.hajj.hajj.service.UserResetDetail;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/message")
-public class MessageController {
-    @Autowired
-    MessageService messageService;
+public class UserResetController {
 
+    @Autowired
+    UserResetDetail userResetDetail;
     @Autowired
     JWTUtil util;
 
@@ -24,14 +24,14 @@ public class MessageController {
     UsersRepo usersRepo;
 
     @GetMapping
-    public List<Message> allMessages(){
-        return messageService.getAllMessage();
+    public List<UserResetPassword> allMessages(){
+        return userResetDetail.getPasswordResetRequest();
     }
 
     @PostMapping("/approve/{id}")
     public Object approveMessage(@PathVariable Long id, HttpServletRequest request){
         Users admin = getUser(request);
-        return messageService.approveMessage(id,admin);
+        return userResetDetail.approveMessage(id,admin);
     }
 
     Users getUser(HttpServletRequest request){

@@ -3,7 +3,6 @@ package com.hajj.hajj.controller;
 import java.util.List;
 import java.util.Optional;
 
-import com.google.gson.Gson;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UsersRepo;
@@ -34,8 +33,6 @@ public class RoleController {
     UsersRepo usersRepo;
     @Autowired
     LoggerService loggerService;
-    @Autowired
-    Gson gson;
 
     @GetMapping
     public List<Role> getAllRoles(HttpServletRequest request){

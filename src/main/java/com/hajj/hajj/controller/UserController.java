@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hajj.hajj.DTO.ResetPasswordDTO;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.UserDetail;
@@ -44,7 +45,8 @@ public class UserController {
     LoggerService loggerService;
 
     @Autowired
-    Gson gson;
+    ObjectMapper objectMapper;
+
 
     @GetMapping
     public List<UserDetail> getAllUsers(){
@@ -57,9 +59,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Users getUserById(@PathVariable Long id,HttpServletRequest request){
+    public Users getUserById(@PathVariable Long id,HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
-//        loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(user));
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(user));
         return userService.getUserById(id).get();
     }
 
@@ -73,13 +75,13 @@ public class UserController {
     @PreAuthorize("hasRole('superadmin')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Object registerUser(@Valid @RequestBody UsersRequest user,HttpServletRequest request){
+    public Object registerUser(@Valid @RequestBody UsersRequest user,HttpServletRequest request) throws JsonProcessingException {
         Users admin = getUser(request);
         if(admin==null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         Object resp = userService.saveUser(user,admin);
-//        loggerService.createNewLog(admin,request.getRequestURI(), gson.toJson(resp));
+        loggerService.createNewLog(admin,request.getRequestURI(), objectMapper.writeValueAsString(resp));
         return resp;
     }
 
@@ -93,16 +95,18 @@ public class UserController {
     }
 
     @PutMapping("/changePassword")
-    public Object changePassword(HttpServletRequest request,@RequestBody ResetPasswordDTO resetPasswordDTO){
+    public Object changePassword(HttpServletRequest request,@RequestBody ResetPasswordDTO resetPasswordDTO) throws JsonProcessingException {
         Users user = getUser(request);
-        return userService.changePassword(user,resetPasswordDTO);
+        Object resp = userService.changePassword(user,resetPasswordDTO);
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(resp));
+        return resp;
     }
 
     @PutMapping("/{id}")
-    public Object updateUserInfo(@RequestBody UsersRequest user,@PathVariable Long id,HttpServletRequest request){
+    public Object updateUserInfo(@RequestBody UsersRequest user,@PathVariable Long id,HttpServletRequest request) throws JsonProcessingException {
         Users admin = getUser(request);
         Object resp = userService.updateUser(id,user,admin);
-//        loggerService.createNewLog(admin,request.getRequestURI(), gson.toJson(resp));
+        loggerService.createNewLog(admin,request.getRequestURI(), objectMapper.writeValueAsString(resp));
         return resp;
     }
 

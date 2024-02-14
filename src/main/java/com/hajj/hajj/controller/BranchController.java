@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.Users;
 import com.hajj.hajj.repository.UsersRepo;
@@ -29,8 +30,8 @@ public class BranchController{
     @Autowired
     BranchService branchService;
 
-//    @Autowired
-//    LoggerService loggerService;
+    @Autowired
+    LoggerService loggerService;
 
     @Autowired
     JWTUtil util;
@@ -39,33 +40,33 @@ public class BranchController{
 
 
     @Autowired
-    Gson gson;
+    ObjectMapper objectMapper;
     @GetMapping
-    public List<Branch> getAllBranches(HttpServletRequest request){
+    public List<Branch> getAllBranches(HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
-        //loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(branchService.getAllBranches()));
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.getAllBranches()));
         return branchService.getAllBranches();
     }
 
     @GetMapping("/{id}")
-    public Optional<Branch> getBranchById(@PathVariable Long id, HttpServletRequest request) {
+    public Optional<Branch> getBranchById(@PathVariable Long id, HttpServletRequest request) throws JsonProcessingException {
             Users user = getUser(request);
-            //loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(branchService.getBranchById(id)));
+            loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.getBranchById(id)));
             return branchService.getBranchById(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Branch registerNewBranch(@Valid @RequestBody BranchRequest newBranch,HttpServletRequest request){
+    public Branch registerNewBranch(@Valid @RequestBody BranchRequest newBranch,HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
-        //loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(branchService.saveBranch(newBranch)));
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.saveBranch(newBranch)));
         return branchService.saveBranch(newBranch);
     }
 
     @PutMapping("/{id}")
-    public Optional<Branch> updateBranch(@RequestBody BranchRequest updatedBranch,@PathVariable Long id,HttpServletRequest request){
+    public Optional<Branch> updateBranch(@RequestBody BranchRequest updatedBranch,@PathVariable Long id,HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
-        //loggerService.createNewLog(user,request.getRequestURI(),gson.toJson(branchService.updateBranch(id,updatedBranch)));
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(branchService.updateBranch(id,updatedBranch)));
         return branchService.updateBranch(id,updatedBranch);
     }
 

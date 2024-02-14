@@ -167,7 +167,7 @@ public class UserService {
             if(userDetail!=null){
                 if(user.getConfirmPassword()!=null&&!user.getConfirmPassword().equals("null")&&
                 !user.getConfirmPassword().isBlank()&&!user.getConfirmPassword().isEmpty()){
-                    generateDefaultPassword(user, userDetail,true,admin);
+                    generateDefaultPassword(user, userDetail,true,user.getCreated_by(),admin);
                 }
                 user.setStatus("Active");
                 UserDetail userDetail1 = userDetailRepo.findUserDetailByUser(user).orElse(null);
@@ -200,35 +200,16 @@ public class UserService {
         if(user==null){
             return false;
         }
-        UserDetail userDetail = userDetailRepo.findUserDetailByUser(user).get();
-        generateDefaultPassword(user,userDetail,false,admin);
+        UserResetPassword newResetPassword = new UserResetPassword();
+        newResetPassword.setReset_user(user);
+        newResetPassword.setMaker(admin);
+        newResetPassword.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
+        newResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+        userResetPasswordRepo.save(newResetPassword);
         return true;
     }
 
-    private void generateDefaultPassword(Users user,UserDetail userDetail,boolean fromSignUp,Users admin){
-        String rawPassword = generateRandomString(user.getUsername());
-        String messageContent;
-        if(fromSignUp){
-            messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s.",userDetail.getFull_name(),user.getUsername(),rawPassword);
-        }
-        else{
-            messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully reset. Your new password is %s.",userDetail.getFull_name(),rawPassword);
-        }
-        String password = passwordEncoder.encode(rawPassword);
-        user.setPassword(password);
-        user.setConfirmPassword(password);
-        Message messageId = messageService.saveMessage(userDetail,messageContent,admin);
-        if(!fromSignUp){
-            UserResetPassword newResetPassword = new UserResetPassword();
-            newResetPassword.setReset_user(user);
-            newResetPassword.setMaker(admin);
-            newResetPassword.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
-            newResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-            newResetPassword.setMessage(messageId);
-            userResetPasswordRepo.save(newResetPassword);
-        }
-        userRepo.save(user);
-    }
+
 
     public Object updateUser(Long id,UsersRequest updatedUser,Users admin){
         if(!userRepo.existsById(id)){
@@ -356,4 +337,22 @@ public class UserService {
         userUpdate.setCreated_at(Timestamp.valueOf(LocalDateTime.now()));
         userUpdateRepo.save(userUpdate);
     }
+
+
+    public void generateDefaultPassword(Users user,UserDetail userDetail,boolean fromSignUp,Users madeBy,Users checkedBy){
+        String rawPassword = generateRandomString(user.getUsername());
+        String messageContent;
+        if(fromSignUp){
+            messageContent = String.format("Dear %s,\nHajj Payment Portal account has been successfully created. Your username is %s, and your password is %s.",userDetail.getFull_name(),user.getUsername(),rawPassword);
+        }
+        else{
+            messageContent = String.format("Dear %s,\nYour password for Hajj Payment Portal account has been successfully reset. Your new password is %s.",userDetail.getFull_name(),rawPassword);
+        }
+        String password = passwordEncoder.encode(rawPassword);
+        user.setPassword(password);
+        user.setConfirmPassword(password);
+        messageService.saveMessage(userDetail,messageContent,madeBy,checkedBy);
+        userRepo.save(user);
+    }
+
 }

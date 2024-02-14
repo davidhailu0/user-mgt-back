@@ -9,9 +9,7 @@ import java.util.List;
 
 @Repository
 public interface MessageRepo extends JpaRepository<Message,Long> {
-    @Query(value = "SELECT m from Message m where m.messageStatus = false and m.checkedBy is null")
+    @Query(value = "SELECT m from Message m where m.messageStatus = false")
     List<Message> findUnsentMessages();
 
-    @Query(value = "SELECT m from Message m where m.messageStatus = false and m.checkedBy is not null")
-    List<Message> findMessagesToBeSent();
 }

@@ -2,7 +2,6 @@ package com.hajj.hajj.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.hajj.hajj.DTO.HajjQueryDTO;
 import com.hajj.hajj.config.JWTUtil;
 import com.hajj.hajj.model.HUjjaj;
@@ -59,8 +58,6 @@ public class HajjController {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Autowired
-    Gson gson;
 
     String token;
 
@@ -171,7 +168,8 @@ public class HajjController {
     }
 
     @PostMapping("/filteredHajjReport")
-    public List<HUjjaj> filteredData(@RequestBody HajjQueryDTO hajjQueryDTO){
+    public List<HUjjaj> filteredData(@RequestBody HajjQueryDTO hajjQueryDTO,HttpServletRequest request) throws JsonProcessingException {
+            Users user = getUser(request);
         if(hajjQueryDTO.getStatus()==null&&hajjQueryDTO.getFromDate()==null&&hajjQueryDTO.getToDate()==null&&hajjQueryDTO.getBranchName()==null&&hajjQueryDTO.getIsFromMobile()==null&& (hajjQueryDTO.getIsFundTransfered()==null||hajjQueryDTO.getIsFundTransfered().equalsIgnoreCase("null")||hajjQueryDTO.getIsFundTransfered().equalsIgnoreCase("all"))){
             return List.of();
         }
@@ -243,6 +241,7 @@ public class HajjController {
             }
             return true;
         }).toList();
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(allHajj));
         return allHajj;
     }
 
@@ -290,7 +289,6 @@ public class HajjController {
             error.put("status", false);
             loggerService.createNewLog(user,request.getRequestURI(),error.toString());
             return error;
-            // Handle unauthorized error
         }
     }
 
@@ -338,9 +336,9 @@ public class HajjController {
             return success;
         }
         Map<String, Object> error = new HashMap<>();
-        error.put("message", "Please Make Sure the User has Paid");
+        error.put("message", "Please make sure payment is authorized");
         error.put("status", "failed");
-        //loggerService.createNewLog(user,request.getRequestURI(),error.toString());
+        loggerService.createNewLog(user,request.getRequestURI(),error.toString());
         return error;
     }
 
@@ -384,12 +382,17 @@ public class HajjController {
 
 
     @GetMapping("/hajjListByBranch")
-    public List<HUjjaj> getMakerSpecificList(HttpServletRequest request){
+    public List<HUjjaj> getMakerSpecificList(HttpServletRequest request) throws JsonProcessingException {
         Users user = getUser(request);
+        List<HUjjaj> hj;
         if(user.getRole().getName().contains("maker")){
-            return hujjajRepo.getMadeHujjajList(user,user.getBranch().getName());
+            hj = hujjajRepo.getMadeHujjajList(user,user.getBranch().getName());
+            loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(hj));
+            return hj;
         }
-        return hujjajRepo.getCheckedHujjajList(user.getBranch().getName());
+        hj = hujjajRepo.getCheckedHujjajList(user.getBranch().getName());
+        loggerService.createNewLog(user,request.getRequestURI(),objectMapper.writeValueAsString(hj));
+        return hj;
     }
 
     @PreAuthorize("hasAnyRole('maker')")
@@ -592,9 +595,6 @@ public class HajjController {
     public  Object CHECK_hujaj_transaction(@RequestBody HUjjaj hUjjaj, HttpServletRequest request)
     {
 
-//   Accept values from user and check the transaction
-//        call wso2 end point post transaction
-
         Users user = getUser(request);
 
         String amount=hUjjaj.getAmount();
@@ -671,8 +671,6 @@ public class HajjController {
                          loggerService.createNewLog(user,request.getRequestURI(),error.toString());
                          return error;
                      }
-
-//                   return resp;
                     Map<String, Object> error = new HashMap<>();
                     error.put("error", resp.get("error"));
                     error.put("success", false);
@@ -717,8 +715,6 @@ public class HajjController {
             hujjaj.setVALUE_DT(hujajRequest.get("VALUE_DATE").toString());
             hujjaj.setAUTH_ID(userDetailRepo.findUserDetailByUser(checker).get().getFull_name());
             hujjaj.setSTMT_DT(hujajRequest.get("TRANSACTION_DATE").toString());
-//            hujjaj.setNODE(hujajRequest.getNODE());
-        //    hujjaj.setAVLDAYS(hujajRequest.getAVLDAYS());
 
             hujjaj.setAC_CCY(hujajRequest.get("AC_CCY").toString());
             hujjaj.setAUTH_TIMESTAMP(hujajRequest.get("AUTH_TIMESTAMP").toString());

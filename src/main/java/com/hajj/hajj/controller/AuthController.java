@@ -1,6 +1,7 @@
 package com.hajj.hajj.controller;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hajj.hajj.service.LoggerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,13 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hajj.hajj.DTO.LoginCredential;
 import com.hajj.hajj.DTO.LoginResponse;
@@ -46,13 +41,35 @@ public class AuthController {
     @Autowired JWTUtil util;
     @Autowired UsersRepo usersRepo;
 
+    @Autowired
+    LoggerService loggerService;
+
     @Autowired AuthenticationManager authenticationManager;
 
     @Autowired
-    Gson gson;
+    ObjectMapper objectMapper;
+
+    @PostMapping("/lockaccount/{username}")
+    public Object lockAccount(@PathVariable String username,HttpServletRequest request) throws JsonProcessingException {
+        Users user = usersRepo.findUsersByUsername(username).orElse(null);
+        if(user!=null){
+            user.setLocked(true);
+            usersRepo.save(user);
+            Map<String, Object> success = new HashMap<>();
+            success.put("status", "success");
+            success.put("message", "Your account has been locked");
+            loggerService.createNewLog(null,request.getRequestURI(), objectMapper.writeValueAsString(success));
+            return success;
+        }
+        Map<String, Object> error = new HashMap<>();
+        error.put("status", "failed");
+        error.put("message", "This Account does not exist");
+        loggerService.createNewLog(null,request.getRequestURI(), objectMapper.writeValueAsString(error));
+        return error;
+    }
 
     @PostMapping("/login")
-    public Object loginHandler(@RequestBody LoginCredential body, HttpServletResponse resp){
+    public Object loginHandler(@RequestBody LoginCredential body, HttpServletResponse resp,HttpServletRequest request) throws JsonProcessingException {
         try {
             UsernamePasswordAuthenticationToken authInputToken =
                     new UsernamePasswordAuthenticationToken(body.getUsername().trim().toLowerCase(), body.getPassword());
@@ -64,6 +81,7 @@ public class AuthController {
                 Map<String, Object> error = new HashMap<>();
                 error.put("status", "failed");
                 error.put("message", "Your Account is locked.");
+                loggerService.createNewLog(null,request.getRequestURI(), objectMapper.writeValueAsString(error));
                 resp.setStatus(403);
                 return error;
             }
@@ -71,6 +89,7 @@ public class AuthController {
                 Map<String, Object> error = new HashMap<>();
                 error.put("status", "failed");
                 error.put("message", "You are not approved. Please Contact IT Support");
+                loggerService.createNewLog(null,request.getRequestURI(), objectMapper.writeValueAsString(error));
                  resp.setStatus(403);
                 return error;
             }
@@ -79,6 +98,7 @@ public class AuthController {
             return response;
         }catch (AuthenticationException authExc){
             Map<String, Object> error = new HashMap<>();
+            loggerService.createNewLog(null,request.getRequestURI(), objectMapper.writeValueAsString(error));
             error.put("status", "failed");
             error.put("message", "Invalid Username or Password");
             resp.setStatus(403);
@@ -98,12 +118,12 @@ public class AuthController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public Users getProfile(HttpServletRequest request){
+    public Users getProfile(HttpServletRequest request) throws JsonProcessingException {
         String token = request.getHeader("Authorization");
         String username = util.validateTokenAndRetrieveSubject(token.split(" ")[1]);
         Users user = usersRepo.findUsersByUsername(username).get();
         user.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().getName().toUpperCase())));
-        //loggerService.createNewLog(user,request.getRequestURI(), gson.toJson(user));
+        loggerService.createNewLog(user,request.getRequestURI(), objectMapper.writeValueAsString(user));
         return user;
     }
 

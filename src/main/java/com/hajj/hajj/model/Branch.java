@@ -1,8 +1,10 @@
 package com.hajj.hajj.model;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,5 +51,10 @@ public class Branch{
         this.created_at = created_at;
         this.updated_at = updated_at;
         this.status = status;
+    }
+
+    public String toJson() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(this);
     }
 }

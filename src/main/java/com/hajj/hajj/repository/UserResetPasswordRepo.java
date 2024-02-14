@@ -8,11 +8,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
 @Repository
 public interface UserResetPasswordRepo extends JpaRepository<UserResetPassword,Long> {
-    @Query(value = "SELECT u from UserResetPassword u where u.message = :message")
-    Optional<UserResetPassword> findUserResetDetailByMessage(@Param("message")Message message);
+    @Query(value = "SELECT u from UserResetPassword u where u.checker IS NULL")
+    List<UserResetPassword> findUserResetRequest();
 }

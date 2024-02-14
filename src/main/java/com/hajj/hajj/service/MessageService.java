@@ -32,87 +32,58 @@ public class MessageService {
     @Value("${sender}")
     String sender;
 
-    @Value("${sender}")
+    @Value("${from}")
     String from;
 
     @Value("${messagePassword}")
     String password;
 
     @Scheduled(fixedRate = 20000)
-    public void SendMessage(){
-        List<Message> unsentMessage = messageRepo.findMessagesToBeSent();
-        for(Message msg:unsentMessage){
-            if(msg.getReceiver()!=null){
+    public void SendMessage() {
+        List<Message> unsentMessage = messageRepo.findUnsentMessages();
+        for (Message msg : unsentMessage) {
+            if (msg.getReceiver() != null) {
                 sendGetRequest(msg);
             }
         }
     }
 
-    public List<Message> getAllMessage(){
+    public List<Message> getAllMessage() {
         return messageRepo.findUnsentMessages();
     }
 
-    public Message saveMessage(UserDetail userDetail, String content,Users admin){
+    public Message saveMessage(UserDetail userDetail, String content, Users madeBy,Users checkedBy) {
         Message newMessage = new Message();
         newMessage.setSender(sender);
         newMessage.setReceiver(userDetail);
         newMessage.setContent(content);
         newMessage.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-        newMessage.setCreatedBy(admin);
+        newMessage.setCreatedBy(madeBy);
+        newMessage.setCheckedBy(checkedBy);
         return messageRepo.save(newMessage);
     }
-
-    public Object approveMessage(Long id,Users admin){
-        Message message = messageRepo.findById(id).orElse(null);
-        if(message!=null){
-            if(message.getCreatedBy().getId().equals(admin.getId())){
-                Map<String,Object> error = new HashMap<>();
-                error.put("success",false);
-                error.put("error","You can not approve this password reset");
-                return error;
-            }
-            UserResetPassword userResetPassword = userResetPasswordRepo.findUserResetDetailByMessage(message).orElse(null);
-            if(userResetPassword!=null){
-                userResetPassword.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-                userResetPassword.setChecker(admin);
-                userResetPasswordRepo.save(userResetPassword);
-            }
-            message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-            message.setCheckedBy(admin);
-            messageRepo.save(message);
-            Map<String,Object> success = new HashMap<>();
-            success.put("success",true);
-            success.put("message","You have successfully approved the reset password");
-            return success;
-        }
-        Map<String,Object> error = new HashMap<>();
-        error.put("success",false);
-        error.put("error","There is not message with this id");
-        return error;
-    }
-
     private void sendGetRequest(Message message){
 
         String encodedQuery = UriComponentsBuilder.fromUriString(url)
                 .queryParam("username", sender)
-                .queryParam("password",password)
                 .queryParam("password",password)
                 .queryParam("from",from)
                 .queryParam("to",message.getReceiver().getPhoneNumber())
                 .queryParam("text",message.getContent())
                 .build()
                 .toUriString();
-     RestTemplate restTemplate = new RestTemplate();
-     try {
-         ResponseEntity<String> response = restTemplate.getForEntity(encodedQuery, String.class);
-         if (response.getStatusCode().is2xxSuccessful()) {
-             message.setMessageStatus(true);
-             message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
-             messageRepo.save(message);
-         }
-     }
-     catch(ResourceAccessException ex){
-         System.out.println("Please Make Sure your IP have the privilege ");
-     }
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(encodedQuery, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                message.setMessageStatus(true);
+                message.setUpdated_at(Timestamp.valueOf(LocalDateTime.now()));
+                messageRepo.save(message);
+            }
+        }
+        catch(ResourceAccessException ex){
+            System.out.println("Please Make Sure your IP have the privilege ");
+        }
     }
+
 }

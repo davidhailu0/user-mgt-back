@@ -2,10 +2,12 @@ package com.hajj.hajj.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 
 @Entity
@@ -74,4 +76,9 @@ public class HUjjaj {
     public HUjjaj(){
 
     }
+
+  public String toJson() throws IOException {
+   ObjectMapper objectMapper = new ObjectMapper();
+   return objectMapper.writeValueAsString(this);
+  }
 }

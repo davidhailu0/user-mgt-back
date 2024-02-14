@@ -1,9 +1,11 @@
 package com.hajj.hajj.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 
 @Entity
@@ -34,4 +36,9 @@ public class UserUpdate {
     boolean previousAccountLockStatus;
     boolean newAccountLockStatus;
     Timestamp created_at;
+
+    public String toJson() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(this);
+    }
 }
