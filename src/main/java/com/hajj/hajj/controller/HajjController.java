@@ -62,9 +62,8 @@ public class HajjController {
     String token;
 
 
-//    @Scheduled(fixedRate = 1000*60*60*24)
 
-        @Scheduled(fixedRate = 1000*60*60*24)
+    @Scheduled(fixedRate = 1000*60*20)
     public void refreshToken(){
         RestTemplate restTemplate=new RestTemplate();
         HttpHeaders headers =  new HttpHeaders();
