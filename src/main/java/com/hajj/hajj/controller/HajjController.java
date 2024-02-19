@@ -136,7 +136,9 @@ public class HajjController {
         List<Users> allUsers = usersRepo.findAll();
         double amount = 0;
         for(HUjjaj hj:hujajData){
-            amount += Double.parseDouble(hj.getAmount());
+            if(hj.isPaid()){
+                amount += Double.parseDouble(hj.getAmount());
+            }
         }
         int paid = hujajData.stream().filter(HUjjaj::isPaid).toList().size();
         int unpaid = hujajData.stream().filter(hj->!hj.isPaid()).toList().size();
