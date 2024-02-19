@@ -398,7 +398,7 @@ public class HajjController {
     @PostMapping("/make_hajj_trans/mobile")
     public Object make_hujaj_for_mobile(@RequestBody HUjjaj hujaj,HttpServletRequest request){
         Users user = getUser(request);
-        if(hujaj.getTrans_ref_no()==null){
+        if(hujaj.getTrans_ref_no()==null||hujaj.getTrans_ref_no().isEmpty()||hujaj.getTrans_ref_no().isBlank()){
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Please Enter a Transaction Reference Number");
             error.put("success", false);
@@ -555,6 +555,13 @@ public class HajjController {
         if(updatedHujaj==null){
             Map<String, Object> error = new HashMap<>();
             error.put("error", "There is no transaction made with "+hUjjaj.getTrans_ref_no()+" Transaction Reference Number");
+            error.put("success", false);
+            loggerService.createNewLog(user,request.getRequestURI(),error.toString());
+            return error;
+        }
+        else if(updatedHujaj.isPaid()){
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "The user has already paid");
             error.put("success", false);
             loggerService.createNewLog(user,request.getRequestURI(),error.toString());
             return error;
